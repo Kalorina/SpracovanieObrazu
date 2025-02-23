@@ -33,8 +33,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>728</width>
-         <height>571</height>
+         <width>718</width>
+         <height>566</height>
         </rect>
        </property>
       </widget>
@@ -48,7 +48,7 @@
      <x>0</x>
      <y>0</y>
      <width>818</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -65,6 +65,7 @@
      <string>Image</string>
     </property>
     <addaction name="actionInvert"/>
+    <addaction name="actionMirror"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
@@ -115,6 +116,11 @@
   <action name="actionInvert">
    <property name="text">
     <string>Invert</string>
+   </property>
+  </action>
+  <action name="actionMirror">
+   <property name="text">
+    <string>Mirror</string>
    </property>
   </action>
  </widget>

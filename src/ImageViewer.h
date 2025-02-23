@@ -4,6 +4,7 @@
 #include <QtWidgets>
 #include "ui_ImageViewer.h"
 #include "ViewerWidget.h"
+#include "ImageProcessing.h"
 
 class ImageViewer : public QMainWindow
 {
@@ -32,4 +33,5 @@ private slots:
 	void on_actionSave_as_triggered();
 	void on_actionExit_triggered();
 	void on_actionInvert_triggered();
+	void on_actionMirror_triggered();
 };

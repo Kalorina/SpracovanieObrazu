@@ -538,4 +538,5 @@ C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/Im
   C:/Qt/6.8.2/msvc2022_64/include/QtWidgets/qwidget.h \
   C:/Qt/6.8.2/msvc2022_64/include/QtWidgets/qwidgetaction.h \
   C:/Qt/6.8.2/msvc2022_64/include/QtWidgets/qwizard.h \
+  C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/ImageViewerSO/src/ImageProcessing.h \
   C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/ImageViewerSO/src/ViewerWidget.h

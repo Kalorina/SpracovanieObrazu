@@ -619,8 +619,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\src\ImageViewer.cpp" />
     <ClCompile Include="C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\src\ViewerWidget.cpp" />
     <ClCompile Include="C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\src\main.cpp" />
-    <ClCompile Include="ImageProcessing.cpp" />
-    <ClInclude Include="ImageProcessing.h" />
+    <ClCompile Include="..\src\ImageProcessing.cpp" />
+    <ClInclude Include="..\src\ImageProcessing.h" />
     <None Include="C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\src\ImageViewer.ui">
     </None>
     <ClInclude Include="C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\src\ImageViewer.h" />

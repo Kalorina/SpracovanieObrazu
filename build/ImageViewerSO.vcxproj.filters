@@ -34,7 +34,7 @@
     <ClCompile Include="C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\build\ImageViewerSO_autogen\UVLADIE3JM_RelWithDebInfo\qrc_ImageViewer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImageProcessing.cpp">
+    <ClCompile Include="..\src\ImageProcessing.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -57,7 +57,7 @@
     <ClInclude Include="C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\build\ImageViewerSO_autogen\include_RelWithDebInfo\src\ui_ImageViewer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImageProcessing.h">
+    <ClInclude Include="..\src\ImageProcessing.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
