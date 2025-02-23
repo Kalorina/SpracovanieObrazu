@@ -1,0 +1,3 @@
+C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/ImageViewerSO/build/CMakeFiles/ImageViewerSO.dir
+C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/ImageViewerSO/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/ImageViewerSO/build/CMakeFiles/ZERO_CHECK.dir
