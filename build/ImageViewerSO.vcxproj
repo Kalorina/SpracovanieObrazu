@@ -407,7 +407,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <CustomBuild Include="C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\build\CMakeFiles\c19c561fd5d9ba3549e6e473c244b412\autouic_(CONFIG).stamp.rule">
       <UseUtf8Encoding>Always</UseUtf8Encoding>
       <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'"></Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
 cd C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\build
 if %errorlevel% neq 0 goto :cmEnd
@@ -423,7 +424,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\build\ImageViewerSO_autogen\autouic_Debug.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
       <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</BuildInParallel>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'"></Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
 cd C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\build
 if %errorlevel% neq 0 goto :cmEnd
@@ -439,7 +441,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\build\ImageViewerSO_autogen\autouic_Release.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
       <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</BuildInParallel>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'"></Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+      </Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
 cd C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\build
 if %errorlevel% neq 0 goto :cmEnd
@@ -455,7 +458,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\build\ImageViewerSO_autogen\autouic_MinSizeRel.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
       <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</BuildInParallel>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'"></Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+      </Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
 cd C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\build
 if %errorlevel% neq 0 goto :cmEnd
@@ -615,6 +619,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\src\ImageViewer.cpp" />
     <ClCompile Include="C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\src\ViewerWidget.cpp" />
     <ClCompile Include="C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\src\main.cpp" />
+    <ClCompile Include="ImageProcessing.cpp" />
+    <ClInclude Include="ImageProcessing.h" />
     <None Include="C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\src\ImageViewer.ui">
     </None>
     <ClInclude Include="C:\Users\karol\Documents\UNI_SCHOOL\STU\Inzinier\Semester_8\SpracovanieObrazu\ImageViewerSO\src\ImageViewer.h" />
