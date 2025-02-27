@@ -49,8 +49,8 @@ public:
 	bool pixelsMirror(uchar* originalImgData, const int bytesPerLine, const int imgWidth, const int imgHeight, const int padding);
 	bool pixelsMirror(double* originalImgData, const int bytesPerLine, const int imgWidth, const int imgHeight, const int padding);
 	uchar* pixelsUnmirror(int padding);
-	QImage* FSHS(QImage* img); // Full Scale Histogram Strech
-	QImage* EH(QImage* img); // Equalization of Histogram 
+	QImage FSHS(QImage img); // Full Scale Histogram Strech
+	QImage EH(QImage img); // Equalization of Histogram 
 
 	// #################### Export ###################
 

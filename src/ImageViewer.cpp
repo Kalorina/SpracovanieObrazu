@@ -35,8 +35,7 @@ bool ImageViewer::openImage(QString filename)
 		return vW->setImage(loadedImg); // obr zostane iba ako kopia vo ViewerWidget
 	}
 
-	img_original = vW->getImage(); // saving original data
-	imgData_original = vW->getData();
+	img_original = loadedImg; // saving original data
 
 	return false;
 }
@@ -84,7 +83,8 @@ bool ImageViewer::invertColors()
 	return true;
 }
 
-//Slots
+// Slots
+// Extra
 void ImageViewer::on_actionOpen_triggered()
 {
 	QString folder = settings.value("folder_img_load_path", "").toString();
@@ -128,17 +128,16 @@ void ImageViewer::on_actionExit_triggered()
 	this->close();
 }
 
+// Image Functions 
 void ImageViewer::on_actionOriginal_triggeted()
 {
-	vW->setImage(*img_original);
+	vW->setImage(img_original);
 	vW->update();
 }
-
 void ImageViewer::on_actionInvert_triggered()
 {
 	invertColors();
 }
-
 void ImageViewer::on_actionMirror_triggered()
 {
 	if (vW->getImage() == nullptr)
@@ -175,7 +174,6 @@ void ImageViewer::on_actionMirror_triggered()
 		printf("unmirror image successful\n");
 
 }
-
 void ImageViewer::on_actionFSHS_triggered()
 {
 	if (vW->isEmpty()) {
@@ -183,12 +181,11 @@ void ImageViewer::on_actionFSHS_triggered()
 	}
 
 	ImageProcessing IPmodul;
-	QImage* new_img = nullptr;
-	new_img = IPmodul.FSHS(vW->getImage());
-	vW->setImage(*new_img);
+	QImage new_img;
+	new_img = IPmodul.FSHS(*vW->getImage());
+	vW->setImage(new_img);
 	vW->update();
 }
-
 void ImageViewer::on_actionEH_triggered()
 {
 	if (vW->isEmpty()) {
@@ -196,8 +193,8 @@ void ImageViewer::on_actionEH_triggered()
 	}
 
 	ImageProcessing IPmodul;
-	QImage* new_img = nullptr;
-	new_img = IPmodul.EH(vW->getImage());
-	vW->setImage(*new_img);
+	QImage new_img;
+	new_img = IPmodul.EH(*vW->getImage());
+	vW->setImage(new_img);
 	vW->update();
 }

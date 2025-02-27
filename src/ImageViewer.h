@@ -20,8 +20,7 @@ private:
 	QSettings settings;
 	QMessageBox msgBox;
 
-	QImage* img_original;
-	uchar* imgData_original;
+	QImage img_original;
 
 	//ImageViewer Events
 	void closeEvent(QCloseEvent* event);
