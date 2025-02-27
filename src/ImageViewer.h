@@ -37,7 +37,7 @@ private slots:
 	void on_actionExit_triggered();
 	
 	// Image Functions
-	void on_actionOriginal_triggeted();
+	void on_actionOriginal_triggered();
 	void on_actionInvert_triggered();
 	void on_actionMirror_triggered();
 	void on_actionFSHS_triggered(); // Full Scale Histogram Strech

@@ -44,7 +44,7 @@ static constexpr auto qt_meta_stringdata_ZN11ImageViewerE = QtMocHelpers::string
     "",
     "on_actionSave_as_triggered",
     "on_actionExit_triggered",
-    "on_actionOriginal_triggeted",
+    "on_actionOriginal_triggered",
     "on_actionInvert_triggered",
     "on_actionMirror_triggered",
     "on_actionFSHS_triggered",
@@ -105,7 +105,7 @@ Q_CONSTINIT const QMetaObject ImageViewer::staticMetaObject = { {
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'on_actionExit_triggered'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
-        // method 'on_actionOriginal_triggeted'
+        // method 'on_actionOriginal_triggered'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'on_actionInvert_triggered'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
@@ -127,7 +127,7 @@ void ImageViewer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 0: _t->on_actionOpen_triggered(); break;
         case 1: _t->on_actionSave_as_triggered(); break;
         case 2: _t->on_actionExit_triggered(); break;
-        case 3: _t->on_actionOriginal_triggeted(); break;
+        case 3: _t->on_actionOriginal_triggered(); break;
         case 4: _t->on_actionInvert_triggered(); break;
         case 5: _t->on_actionMirror_triggered(); break;
         case 6: _t->on_actionFSHS_triggered(); break;

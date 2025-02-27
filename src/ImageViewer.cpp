@@ -32,10 +32,9 @@ bool ImageViewer::openImage(QString filename)
 {
 	QImage loadedImg(filename);
 	if (!loadedImg.isNull()) {
+		img_original = loadedImg; // saving original data
 		return vW->setImage(loadedImg); // obr zostane iba ako kopia vo ViewerWidget
 	}
-
-	img_original = loadedImg; // saving original data
 
 	return false;
 }
@@ -129,8 +128,11 @@ void ImageViewer::on_actionExit_triggered()
 }
 
 // Image Functions 
-void ImageViewer::on_actionOriginal_triggeted()
+void ImageViewer::on_actionOriginal_triggered()
 {
+	if (vW->isEmpty()) {
+		return;
+	}
 	vW->setImage(img_original);
 	vW->update();
 }
