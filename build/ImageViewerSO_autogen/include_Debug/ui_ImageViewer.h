@@ -35,6 +35,8 @@ public:
     QAction *actionResize;
     QAction *actionInvert;
     QAction *actionMirror;
+    QAction *actionFSHS;
+    QAction *actionEH;
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout;
     QGroupBox *groupBox;
@@ -66,6 +68,10 @@ public:
         actionInvert->setObjectName("actionInvert");
         actionMirror = new QAction(ImageViewerClass);
         actionMirror->setObjectName("actionMirror");
+        actionFSHS = new QAction(ImageViewerClass);
+        actionFSHS->setObjectName("actionFSHS");
+        actionEH = new QAction(ImageViewerClass);
+        actionEH->setObjectName("actionEH");
         centralWidget = new QWidget(ImageViewerClass);
         centralWidget->setObjectName("centralWidget");
         horizontalLayout = new QHBoxLayout(centralWidget);
@@ -86,7 +92,7 @@ public:
         scrollArea->setWidgetResizable(true);
         scrollAreaWidgetContents = new QWidget();
         scrollAreaWidgetContents->setObjectName("scrollAreaWidgetContents");
-        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 718, 566));
+        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 728, 560));
         scrollArea->setWidget(scrollAreaWidgetContents);
 
         horizontalLayout->addWidget(scrollArea);
@@ -94,7 +100,7 @@ public:
         ImageViewerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(ImageViewerClass);
         menuBar->setObjectName("menuBar");
-        menuBar->setGeometry(QRect(0, 0, 818, 21));
+        menuBar->setGeometry(QRect(0, 0, 818, 33));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName("menuFile");
         menuImage = new QMenu(menuBar);
@@ -115,6 +121,8 @@ public:
         menuFile->addAction(actionExit);
         menuImage->addAction(actionInvert);
         menuImage->addAction(actionMirror);
+        menuImage->addAction(actionFSHS);
+        menuImage->addAction(actionEH);
 
         retranslateUi(ImageViewerClass);
 
@@ -140,6 +148,8 @@ public:
         actionResize->setText(QCoreApplication::translate("ImageViewerClass", "Resize", nullptr));
         actionInvert->setText(QCoreApplication::translate("ImageViewerClass", "Invert", nullptr));
         actionMirror->setText(QCoreApplication::translate("ImageViewerClass", "Mirror", nullptr));
+        actionFSHS->setText(QCoreApplication::translate("ImageViewerClass", "FSHS", nullptr));
+        actionEH->setText(QCoreApplication::translate("ImageViewerClass", "EH", nullptr));
         groupBox->setTitle(QCoreApplication::translate("ImageViewerClass", "Controls", nullptr));
         menuFile->setTitle(QCoreApplication::translate("ImageViewerClass", "File", nullptr));
         menuImage->setTitle(QCoreApplication::translate("ImageViewerClass", "Image", nullptr));

@@ -34,6 +34,10 @@ bool ImageViewer::openImage(QString filename)
 	if (!loadedImg.isNull()) {
 		return vW->setImage(loadedImg); // obr zostane iba ako kopia vo ViewerWidget
 	}
+
+	img_original = vW->getImage(); // saving original data
+	imgData_original = vW->getData();
+
 	return false;
 }
 bool ImageViewer::saveImage(QString filename)
@@ -124,6 +128,12 @@ void ImageViewer::on_actionExit_triggered()
 	this->close();
 }
 
+void ImageViewer::on_actionOriginal_triggeted()
+{
+	vW->setImage(*img_original);
+	vW->update();
+}
+
 void ImageViewer::on_actionInvert_triggered()
 {
 	invertColors();
@@ -164,4 +174,30 @@ void ImageViewer::on_actionMirror_triggered()
 	else
 		printf("unmirror image successful\n");
 
+}
+
+void ImageViewer::on_actionFSHS_triggered()
+{
+	if (vW->isEmpty()) {
+		return;
+	}
+
+	ImageProcessing IPmodul;
+	QImage* new_img = nullptr;
+	new_img = IPmodul.FSHS(vW->getImage());
+	vW->setImage(*new_img);
+	vW->update();
+}
+
+void ImageViewer::on_actionEH_triggered()
+{
+	if (vW->isEmpty()) {
+		return;
+	}
+
+	ImageProcessing IPmodul;
+	QImage* new_img = nullptr;
+	new_img = IPmodul.EH(vW->getImage());
+	vW->setImage(*new_img);
+	vW->update();
 }
