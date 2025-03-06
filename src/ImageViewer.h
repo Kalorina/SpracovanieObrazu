@@ -39,7 +39,7 @@ private slots:
 	// Image Functions
 	void on_actionOriginal_triggered();
 	void on_actionInvert_triggered();
-	void on_actionMirror_triggered();
 	void on_actionFSHS_triggered(); // Full Scale Histogram Strech
 	void on_actionEH_triggered(); // Equalization of Histogram 
+	void on_actionConvolution_triggered();
 };

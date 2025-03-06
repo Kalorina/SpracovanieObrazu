@@ -46,9 +46,9 @@ static constexpr auto qt_meta_stringdata_ZN11ImageViewerE = QtMocHelpers::string
     "on_actionExit_triggered",
     "on_actionOriginal_triggered",
     "on_actionInvert_triggered",
-    "on_actionMirror_triggered",
     "on_actionFSHS_triggered",
-    "on_actionEH_triggered"
+    "on_actionEH_triggered",
+    "on_actionConvolution_triggered"
 );
 #else  // !QT_MOC_HAS_STRINGDATA
 #error "qtmochelpers.h not found or too old."
@@ -109,11 +109,11 @@ Q_CONSTINIT const QMetaObject ImageViewer::staticMetaObject = { {
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'on_actionInvert_triggered'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
-        // method 'on_actionMirror_triggered'
-        QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'on_actionFSHS_triggered'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'on_actionEH_triggered'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'on_actionConvolution_triggered'
         QtPrivate::TypeAndForceComplete<void, std::false_type>
     >,
     nullptr
@@ -129,9 +129,9 @@ void ImageViewer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 2: _t->on_actionExit_triggered(); break;
         case 3: _t->on_actionOriginal_triggered(); break;
         case 4: _t->on_actionInvert_triggered(); break;
-        case 5: _t->on_actionMirror_triggered(); break;
-        case 6: _t->on_actionFSHS_triggered(); break;
-        case 7: _t->on_actionEH_triggered(); break;
+        case 5: _t->on_actionFSHS_triggered(); break;
+        case 6: _t->on_actionEH_triggered(); break;
+        case 7: _t->on_actionConvolution_triggered(); break;
         default: ;
         }
     }

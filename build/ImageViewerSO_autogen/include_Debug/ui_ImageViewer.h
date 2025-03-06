@@ -38,6 +38,7 @@ public:
     QAction *actionFSHS;
     QAction *actionEH;
     QAction *actionOriginal;
+    QAction *actionConvolution;
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout;
     QGroupBox *groupBox;
@@ -75,6 +76,8 @@ public:
         actionEH->setObjectName("actionEH");
         actionOriginal = new QAction(ImageViewerClass);
         actionOriginal->setObjectName("actionOriginal");
+        actionConvolution = new QAction(ImageViewerClass);
+        actionConvolution->setObjectName("actionConvolution");
         centralWidget = new QWidget(ImageViewerClass);
         centralWidget->setObjectName("centralWidget");
         horizontalLayout = new QHBoxLayout(centralWidget);
@@ -124,9 +127,9 @@ public:
         menuFile->addAction(actionExit);
         menuImage->addAction(actionOriginal);
         menuImage->addAction(actionInvert);
-        menuImage->addAction(actionMirror);
         menuImage->addAction(actionFSHS);
         menuImage->addAction(actionEH);
+        menuImage->addAction(actionConvolution);
 
         retranslateUi(ImageViewerClass);
 
@@ -151,10 +154,11 @@ public:
 #endif // QT_CONFIG(shortcut)
         actionResize->setText(QCoreApplication::translate("ImageViewerClass", "Resize", nullptr));
         actionInvert->setText(QCoreApplication::translate("ImageViewerClass", "Invert", nullptr));
-        actionMirror->setText(QCoreApplication::translate("ImageViewerClass", "Mirror", nullptr));
+        actionMirror->setText(QCoreApplication::translate("ImageViewerClass", "Convolution", nullptr));
         actionFSHS->setText(QCoreApplication::translate("ImageViewerClass", "FSHS", nullptr));
         actionEH->setText(QCoreApplication::translate("ImageViewerClass", "EH", nullptr));
         actionOriginal->setText(QCoreApplication::translate("ImageViewerClass", "Original", nullptr));
+        actionConvolution->setText(QCoreApplication::translate("ImageViewerClass", "Convolution", nullptr));
         groupBox->setTitle(QCoreApplication::translate("ImageViewerClass", "Controls", nullptr));
         menuFile->setTitle(QCoreApplication::translate("ImageViewerClass", "File", nullptr));
         menuImage->setTitle(QCoreApplication::translate("ImageViewerClass", "Image", nullptr));

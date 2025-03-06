@@ -66,9 +66,9 @@
     </property>
     <addaction name="actionOriginal"/>
     <addaction name="actionInvert"/>
-    <addaction name="actionMirror"/>
     <addaction name="actionFSHS"/>
     <addaction name="actionEH"/>
+    <addaction name="actionConvolution"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
@@ -123,7 +123,7 @@
   </action>
   <action name="actionMirror">
    <property name="text">
-    <string>Mirror</string>
+    <string>Convolution</string>
    </property>
   </action>
   <action name="actionFSHS">
@@ -139,6 +139,11 @@
   <action name="actionOriginal">
    <property name="text">
     <string>Original</string>
+   </property>
+  </action>
+  <action name="actionConvolution">
+   <property name="text">
+    <string>Convolution</string>
    </property>
   </action>
  </widget>

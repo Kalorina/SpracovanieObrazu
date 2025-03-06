@@ -46,16 +46,17 @@ public:
 
 	// #################### Functions ###################
 
-	bool pixelsMirror(uchar* originalImgData, const int bytesPerLine, const int imgWidth, const int imgHeight, const int padding);
-	bool pixelsMirror(double* originalImgData, const int bytesPerLine, const int imgWidth, const int imgHeight, const int padding);
-	uchar* pixelsUnmirror(int padding);
+	//bool pixelsMirror(uchar* originalImgData, const int bytesPerLine, const int imgWidth, const int imgHeight, const int padding);
+	//bool pixelsMirror(double* originalImgData, const int bytesPerLine, const int imgWidth, const int imgHeight, const int padding);
+	//uchar* pixelsUnmirror(int padding);
+
+	QImage pixelsMirror(QImage img, int padding);
 	QImage FSHS(QImage img); // Full Scale Histogram Strech
 	QImage EH(QImage img); // Equalization of Histogram 
 
 	// #################### Export ###################
 
-	bool exportToPGM(std::string fileName, uint imgWidth, uint imgHeight, int maxValue, uchar* imgData);
-	bool exportToPGM(std::string fileName, uint imgWidth, uint imgHeight, int maxValue, double* imgData, bool scaleData);
+	bool exportToPGM(const QImage& image, const QString& filename);
 
 private: 
 	// #################### Variables ###################

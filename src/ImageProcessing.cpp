@@ -9,6 +9,7 @@ ImageProcessing::~ImageProcessing() {
 	delete[] m_pImgLocalData;
 }
 
+/*
 bool ImageProcessing::pixelsMirror(uchar* originalImgData, const int bytesPerLine, const int imgWidth, const int imgHeight, const int padding)
 {
 	// check if there is already some image data stored
@@ -68,7 +69,7 @@ bool ImageProcessing::pixelsMirror(uchar* originalImgData, const int bytesPerLin
 		5 4 5 6 5
 		8 7 8 9 8
 		8 7 8 9 8
-	*/
+	//
 
 	for (int i = 0; i < padding; i++)
 	{
@@ -222,6 +223,107 @@ uchar* ImageProcessing::pixelsUnmirror(int padding)
 
 	return pImgData;
 }
+*/
+
+QImage ImageProcessing::pixelsMirror(QImage img, int padding)
+{
+	if (img.format() != QImage::Format_Grayscale8) {
+		qDebug() << "Error: Image must be in Format_Grayscale8.";
+		return img;
+	}
+
+	int imgWidth = img.width();
+	int imgHeight = img.height();
+	int bytesPerLine = img.bytesPerLine();
+	const uchar* originalImgData = img.bits();  // Get raw image data
+
+	// Check if memory needs to be cleared
+	if (m_pImgLocalData != nullptr)
+	{
+		delete[] m_pImgLocalData;
+		m_pImgLocalData = nullptr;
+	}
+
+	// Compute new size with padding
+	m_imgWidth = imgWidth + 2 * padding;
+	m_imgHeight = imgHeight + 2 * padding;
+	size_t size = static_cast<size_t>(m_imgWidth) * m_imgHeight;
+
+	// Allocate memory for padded image
+	m_pImgLocalData = (double*)calloc(size, sizeof(double));
+	if (m_pImgLocalData == nullptr)
+		return img;
+
+	int indexNew = 0, indexOld = 0;
+	double tempD = 0.0;
+	int temp = 0;
+
+	// Copy the original image into the center of the padded image
+	for (int i = 0; i < imgHeight; i++) {
+		for (int j = 0; j < imgWidth; j++) {
+			indexNew = (i + padding) * m_imgWidth + (j + padding);
+			indexOld = i * bytesPerLine + j;
+			tempD = static_cast<double>(originalImgData[indexOld]) / 255.0;  // Normalize to 0.0 - 1.0
+			m_pImgLocalData[indexNew] = tempD;
+		}
+	}
+
+	// Mirror over Upper and Lower edges
+	temp = 1;
+	for (int i = 0; i < padding; i++)
+	{
+		for (int j = padding; j < m_imgWidth - padding; j++)
+		{
+			// Upper edge
+			indexOld = (i + padding) * m_imgWidth + j;
+			indexNew = (i + padding - temp) * m_imgWidth + j;
+			m_pImgLocalData[indexNew] = m_pImgLocalData[indexOld];
+
+			// Lower edge
+			indexOld = (m_imgHeight - i - padding - 1) * m_imgWidth + j;
+			indexNew = (m_imgHeight - i - padding + temp - 1) * m_imgWidth + j;
+			m_pImgLocalData[indexNew] = m_pImgLocalData[indexOld];
+		}
+		temp += 2;
+	}
+
+	// Mirror over Left and Right edges
+	for (int i = 0; i < m_imgHeight; i++)
+	{
+		temp = 1;
+		for (int j = 0; j < padding; j++)
+		{
+			// Left edge
+			indexOld = i * m_imgWidth + (j + padding);
+			indexNew = i * m_imgWidth + (j + padding - temp);
+			m_pImgLocalData[indexNew] = m_pImgLocalData[indexOld];
+
+			// Right edge
+			indexOld = i * m_imgWidth + (m_imgWidth - padding - 1 - j);
+			indexNew = i * m_imgWidth + (m_imgWidth - padding - 1 - j + temp);
+			m_pImgLocalData[indexNew] = m_pImgLocalData[indexOld];
+
+			temp += 2;
+		}
+	}
+
+	// Convert to QImage
+	QImage img_mirrored(m_imgWidth, m_imgHeight, QImage::Format_Grayscale8);
+	uchar* imageData = img_mirrored.bits(); // pointer for data
+
+	for (int i = 0; i < m_imgHeight; i++) {
+		for (int j = 0; j < m_imgWidth; j++) {
+			int index = i * m_imgWidth + j;
+			int pixelValue = static_cast<int>(m_pImgLocalData[index] * 255.0);  // Scale to 0-255
+			//pixelValue = qBound(0, pixelValue, 255);  // Ensure within valid range
+
+			imageData[i * img_mirrored.bytesPerLine() + j] = static_cast<uchar>(pixelValue);
+		}
+	}
+
+	exportToPGM(img, "test.pgm");
+	return img_mirrored;
+}
 
 QImage ImageProcessing::FSHS(QImage img)
 {
@@ -260,7 +362,7 @@ QImage ImageProcessing::FSHS(QImage img)
 				newGray = static_cast<int>(255.0 * (gray - minIntensity) / (maxIntensity - minIntensity));
 			}
 
-			// range <0,255>
+			// range <0,255> -> range <0,1> CHANGE
 			newGray = std::min(255, std::max(0, newGray));
 
 			resultImg.setPixelColor(x, y, QColor(newGray, newGray, newGray));
@@ -336,7 +438,7 @@ QImage ImageProcessing::EH(QImage img)
 			int gray = qGray(oldColor.red(), oldColor.green(), oldColor.blue());
 			int newGray = mapping[gray];
 
-			// in range <0,255>
+			// in range <0,255> CHANGE to range <0,1>
 			newGray = std::min(255, std::max(0, newGray));
 
 			QColor newColor(newGray, newGray, newGray);
@@ -345,4 +447,20 @@ QImage ImageProcessing::EH(QImage img)
 	}
 
 	return resultImg;
+}
+
+bool ImageProcessing::exportToPGM(const QImage& image, const QString& filename)
+{
+	// Ensure the directory exists; if not, create it
+	QString directory = "C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/ImageViewerSO/data";
+	QDir dir(directory);
+	if (!dir.exists()) {
+		dir.mkpath(directory);
+	}
+
+	// Construct the full file path
+	QString filePath = dir.filePath(filename);
+
+	// Save the image in PGM format
+	return image.save(filePath, "PGM");
 }

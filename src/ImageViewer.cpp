@@ -140,42 +140,6 @@ void ImageViewer::on_actionInvert_triggered()
 {
 	invertColors();
 }
-void ImageViewer::on_actionMirror_triggered()
-{
-	if (vW->getImage() == nullptr)
-		return;
-
-	// uint N = QInputDialog::getInt(this, tr("Mirror pixels"), tr("Number of pixels: "), 2, 1);
-
-	ImageProcessing IPmodul;
-
-	int N = 10;
-	bool result = IPmodul.pixelsMirror(vW->getData(), vW->getImage()->bytesPerLine(), vW->getImage()->width(), vW->getImage()->height(), N);
-	
-	printf("mirror pixels result: %d\n");
-	if (result == false)
-		printf("mirror image unsuccessful\n");
-	else
-		printf("mirror image successful\n");
-
-	printf("Data (format?)\n");
-
-	for (int i = 0; i < 3; i++)
-	{
-		for (int j = 0; j < IPmodul.getImgWidth(); j++)
-		{
-			printf("%.1lf ", IPmodul.getImgData()[i * IPmodul.getImgWidth() + j]);
-		}
-		printf("\n\n\n");
-	}
-
-	uchar* data = IPmodul.pixelsUnmirror(N);
-	if (data == nullptr)
-		printf("unmirror image unsuccessful\n");
-	else
-		printf("unmirror image successful\n");
-
-}
 void ImageViewer::on_actionFSHS_triggered()
 {
 	if (vW->isEmpty()) {
@@ -200,3 +164,54 @@ void ImageViewer::on_actionEH_triggered()
 	vW->setImage(new_img);
 	vW->update();
 }
+void ImageViewer::on_actionConvolution_triggered()
+{
+	if (vW->isEmpty()) {
+		return;
+	}
+
+	ImageProcessing IPmodul;
+	QImage new_img;
+	new_img = IPmodul.pixelsMirror(*vW->getImage(), 50);
+	vW->setImage(new_img);
+	vW->update();
+}
+
+/*
+void ImageViewer::on_actionMirror_triggered()
+{
+	if (vW->getImage() == nullptr)
+		return;
+
+	// uint N = QInputDialog::getInt(this, tr("Mirror pixels"), tr("Number of pixels: "), 2, 1);
+
+	ImageProcessing IPmodul;
+
+	int N = 10;
+	bool result = IPmodul.pixelsMirror(vW->getData(), vW->getImage()->bytesPerLine(), vW->getImage()->width(), vW->getImage()->height(), N);
+
+	printf("mirror pixels result: %d\n");
+	if (result == false)
+		printf("mirror image unsuccessful\n");
+	else
+		printf("mirror image successful\n");
+
+	printf("Data (format?)\n");
+
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < IPmodul.getImgWidth(); j++)
+		{
+			printf("%.1lf ", IPmodul.getImgData()[i * IPmodul.getImgWidth() + j]);
+		}
+		printf("\n\n\n");
+	}
+
+	uchar* data = IPmodul.pixelsUnmirror(N);
+	if (data == nullptr)
+		printf("unmirror image unsuccessful\n");
+	else
+		printf("unmirror image successful\n");
+
+}
+*/
