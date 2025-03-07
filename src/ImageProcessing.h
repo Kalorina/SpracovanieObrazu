@@ -35,13 +35,8 @@ public:
 
 	// #################### Get functions ###################
 
-	// Returns pointer to memory where the image data are stored.
 	double* getImgData() { return m_pImgLocalData; }
-
-	// Get width of the locally stored image.
 	uint getImgWidth() { return m_imgWidth; }
-
-	// Get height of the locally stored image.
 	uint getImgHeight() { return m_imgHeight; }
 
 	// #################### Functions ###################
@@ -51,12 +46,16 @@ public:
 	//uchar* pixelsUnmirror(int padding);
 
 	QImage pixelsMirror(QImage img, int padding);
+	QImage pixelsUnmirror(QImage img, int padding);
+	QImage Convolution(QImage img, int padding);
+
+	QVector<int> computeHistogram(QImage img);
 	QImage FSHS(QImage img); // Full Scale Histogram Strech
 	QImage EH(QImage img); // Equalization of Histogram 
 
 	// #################### Export ###################
 
-	bool exportToPGM(const QImage& image, const QString& filename);
+	bool exportToPGM(QImage img, const QString& filename);
 
 private: 
 	// #################### Variables ###################
@@ -64,5 +63,14 @@ private:
 	double* m_pImgLocalData = nullptr;
 	uint m_imgWidth = 0;
 	uint m_imgHeight = 0;
+
+	// Convolution mask
+	QVector<QVector<double>> convolution_mask = {
+		{0.000077693991227,   0.001813519368126,   0.005031312077870,   0.001813519368126,   0.000077693991227},
+		{0.001813519368126,   0.042330847554975,   0.117439994473243,   0.042330847554975,   0.001813519368126},
+		{0.005031312077870,   0.117439994473243,   0.325972452665734,   0.117439994473243,   0.005031312077870},
+		{0.001813519368126,   0.042330847554975,   0.117439994473243,   0.042330847554975,   0.001813519368126},
+		{0.000077693991227,   0.001813519368126,   0.005031312077870,   0.001813519368126,   0.000077693991227}
+	};
 
 };

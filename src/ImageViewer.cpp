@@ -172,7 +172,7 @@ void ImageViewer::on_actionConvolution_triggered()
 
 	ImageProcessing IPmodul;
 	QImage new_img;
-	new_img = IPmodul.pixelsMirror(*vW->getImage(), 50);
+	new_img = IPmodul.Convolution(*vW->getImage(), 2);
 	vW->setImage(new_img);
 	vW->update();
 }
