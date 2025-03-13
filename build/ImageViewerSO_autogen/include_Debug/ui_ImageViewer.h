@@ -12,13 +12,16 @@
 #include <QtCore/QVariant>
 #include <QtGui/QAction>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QScrollArea>
+#include <QtWidgets/QSpinBox>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QWidget>
@@ -39,10 +42,17 @@ public:
     QAction *actionEH;
     QAction *actionOriginal;
     QAction *actionConvolution;
+    QAction *actionExplicite_Scheme;
+    QAction *actionExplicit_Scheme;
+    QAction *actionLinearHeatEq_Scheme;
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout;
     QGroupBox *groupBox;
     QGridLayout *gridLayout;
+    QDoubleSpinBox *timeStepdoubleSpinBox;
+    QSpinBox *stepCountspinBox;
+    QLabel *label_2;
+    QLabel *label;
     QScrollArea *scrollArea;
     QWidget *scrollAreaWidgetContents;
     QMenuBar *menuBar;
@@ -55,7 +65,7 @@ public:
     {
         if (ImageViewerClass->objectName().isEmpty())
             ImageViewerClass->setObjectName("ImageViewerClass");
-        ImageViewerClass->resize(818, 646);
+        ImageViewerClass->resize(1019, 646);
         actionOpen = new QAction(ImageViewerClass);
         actionOpen->setObjectName("actionOpen");
         actionSave_as = new QAction(ImageViewerClass);
@@ -78,6 +88,12 @@ public:
         actionOriginal->setObjectName("actionOriginal");
         actionConvolution = new QAction(ImageViewerClass);
         actionConvolution->setObjectName("actionConvolution");
+        actionExplicite_Scheme = new QAction(ImageViewerClass);
+        actionExplicite_Scheme->setObjectName("actionExplicite_Scheme");
+        actionExplicit_Scheme = new QAction(ImageViewerClass);
+        actionExplicit_Scheme->setObjectName("actionExplicit_Scheme");
+        actionLinearHeatEq_Scheme = new QAction(ImageViewerClass);
+        actionLinearHeatEq_Scheme->setObjectName("actionLinearHeatEq_Scheme");
         centralWidget = new QWidget(ImageViewerClass);
         centralWidget->setObjectName("centralWidget");
         horizontalLayout = new QHBoxLayout(centralWidget);
@@ -90,6 +106,26 @@ public:
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName("gridLayout");
+        timeStepdoubleSpinBox = new QDoubleSpinBox(groupBox);
+        timeStepdoubleSpinBox->setObjectName("timeStepdoubleSpinBox");
+
+        gridLayout->addWidget(timeStepdoubleSpinBox, 1, 2, 1, 1);
+
+        stepCountspinBox = new QSpinBox(groupBox);
+        stepCountspinBox->setObjectName("stepCountspinBox");
+
+        gridLayout->addWidget(stepCountspinBox, 0, 2, 1, 1);
+
+        label_2 = new QLabel(groupBox);
+        label_2->setObjectName("label_2");
+
+        gridLayout->addWidget(label_2, 1, 0, 1, 1);
+
+        label = new QLabel(groupBox);
+        label->setObjectName("label");
+
+        gridLayout->addWidget(label, 0, 0, 1, 1);
+
 
         horizontalLayout->addWidget(groupBox);
 
@@ -98,7 +134,7 @@ public:
         scrollArea->setWidgetResizable(true);
         scrollAreaWidgetContents = new QWidget();
         scrollAreaWidgetContents->setObjectName("scrollAreaWidgetContents");
-        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 728, 560));
+        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 796, 560));
         scrollArea->setWidget(scrollAreaWidgetContents);
 
         horizontalLayout->addWidget(scrollArea);
@@ -106,7 +142,7 @@ public:
         ImageViewerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(ImageViewerClass);
         menuBar->setObjectName("menuBar");
-        menuBar->setGeometry(QRect(0, 0, 818, 33));
+        menuBar->setGeometry(QRect(0, 0, 1019, 33));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName("menuFile");
         menuImage = new QMenu(menuBar);
@@ -130,6 +166,7 @@ public:
         menuImage->addAction(actionFSHS);
         menuImage->addAction(actionEH);
         menuImage->addAction(actionConvolution);
+        menuImage->addAction(actionLinearHeatEq_Scheme);
 
         retranslateUi(ImageViewerClass);
 
@@ -159,7 +196,12 @@ public:
         actionEH->setText(QCoreApplication::translate("ImageViewerClass", "EH", nullptr));
         actionOriginal->setText(QCoreApplication::translate("ImageViewerClass", "Original", nullptr));
         actionConvolution->setText(QCoreApplication::translate("ImageViewerClass", "Convolution", nullptr));
+        actionExplicite_Scheme->setText(QCoreApplication::translate("ImageViewerClass", "Explicite Scheme", nullptr));
+        actionExplicit_Scheme->setText(QCoreApplication::translate("ImageViewerClass", "Explicit Scheme", nullptr));
+        actionLinearHeatEq_Scheme->setText(QCoreApplication::translate("ImageViewerClass", "LinearHeatEq Scheme", nullptr));
         groupBox->setTitle(QCoreApplication::translate("ImageViewerClass", "Controls", nullptr));
+        label_2->setText(QCoreApplication::translate("ImageViewerClass", "Time Step Size", nullptr));
+        label->setText(QCoreApplication::translate("ImageViewerClass", "Time Step Count", nullptr));
         menuFile->setTitle(QCoreApplication::translate("ImageViewerClass", "File", nullptr));
         menuImage->setTitle(QCoreApplication::translate("ImageViewerClass", "Image", nullptr));
     } // retranslateUi

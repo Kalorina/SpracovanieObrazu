@@ -12,6 +12,9 @@ ImageViewer::ImageViewer(QWidget* parent)
 	ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
+	ui->stepCountspinBox->setValue(10);
+	ui->timeStepdoubleSpinBox->setValue(0.2);
+
 	vW->setObjectName("ViewerWidget");
 }
 
@@ -131,7 +134,7 @@ void ImageViewer::on_actionExit_triggered()
 void ImageViewer::on_actionOriginal_triggered()
 {
 	if (vW->isEmpty()) {
-		return;
+		false;
 	}
 	vW->setImage(img_original);
 	vW->update();
@@ -143,7 +146,7 @@ void ImageViewer::on_actionInvert_triggered()
 void ImageViewer::on_actionFSHS_triggered()
 {
 	if (vW->isEmpty()) {
-		return;
+		false;
 	}
 
 	ImageProcessing IPmodul;
@@ -155,7 +158,7 @@ void ImageViewer::on_actionFSHS_triggered()
 void ImageViewer::on_actionEH_triggered()
 {
 	if (vW->isEmpty()) {
-		return;
+		false;
 	}
 
 	ImageProcessing IPmodul;
@@ -167,7 +170,7 @@ void ImageViewer::on_actionEH_triggered()
 void ImageViewer::on_actionConvolution_triggered()
 {
 	if (vW->isEmpty()) {
-		return;
+		false;
 	}
 
 	ImageProcessing IPmodul;
@@ -176,42 +179,21 @@ void ImageViewer::on_actionConvolution_triggered()
 	vW->setImage(new_img);
 	vW->update();
 }
-
-/*
-void ImageViewer::on_actionMirror_triggered()
+void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 {
-	if (vW->getImage() == nullptr)
-		return;
-
-	// uint N = QInputDialog::getInt(this, tr("Mirror pixels"), tr("Number of pixels: "), 2, 1);
-
-	ImageProcessing IPmodul;
-
-	int N = 10;
-	bool result = IPmodul.pixelsMirror(vW->getData(), vW->getImage()->bytesPerLine(), vW->getImage()->width(), vW->getImage()->height(), N);
-
-	printf("mirror pixels result: %d\n");
-	if (result == false)
-		printf("mirror image unsuccessful\n");
-	else
-		printf("mirror image successful\n");
-
-	printf("Data (format?)\n");
-
-	for (int i = 0; i < 3; i++)
-	{
-		for (int j = 0; j < IPmodul.getImgWidth(); j++)
-		{
-			printf("%.1lf ", IPmodul.getImgData()[i * IPmodul.getImgWidth() + j]);
-		}
-		printf("\n\n\n");
+	if (vW->isEmpty()) {
+		false;
 	}
 
-	uchar* data = IPmodul.pixelsUnmirror(N);
-	if (data == nullptr)
-		printf("unmirror image unsuccessful\n");
-	else
-		printf("unmirror image successful\n");
+	stepCount = ui->stepCountspinBox->value();  
+	timeStep = ui->timeStepdoubleSpinBox->value();
 
+	qDebug() << "Step Count:" << stepCount;
+	qDebug() << "Time Step:" << timeStep;
+
+	ImageProcessing IPmodul;
+	QImage new_img;
+	new_img = IPmodul.Convolution(*vW->getImage(), 2);
+	vW->setImage(new_img);
+	vW->update();
 }
-*/

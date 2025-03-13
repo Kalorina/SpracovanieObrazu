@@ -49,6 +49,11 @@ public:
 	QImage pixelsUnmirror(QImage img, int padding);
 	QImage Convolution(QImage img, int padding);
 
+	// Heat Equation 
+
+	QVector<QImage> schemeExplicit(QImage img, int stepCount, double timeStep);
+	QVector<QImage> schemeImplicit(QImage img, int stepCount, double timeStep);
+
 	QVector<int> computeHistogram(QImage img);
 	QImage FSHS(QImage img); // Full Scale Histogram Strech
 	QImage EH(QImage img); // Equalization of Histogram 

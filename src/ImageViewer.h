@@ -22,6 +22,18 @@ private:
 
 	QImage img_original;
 
+	// Linear Heat Eq
+
+	//QSpinBox* stepCountInput = new QSpinBox(this);
+	//QDoubleSpinBox* timeStepInput = new QDoubleSpinBox(this);
+
+	// Explicit scheme
+	double timeStep = 0.2;
+	int stepCount = 10;
+
+	QVector<QImage> images_ES; // linear heat eq -> explicit scheme
+	QVector<QImage> images_IS; // linear heat eq -> implicit scheme
+
 	//ImageViewer Events
 	void closeEvent(QCloseEvent* event);
 
@@ -41,5 +53,6 @@ private slots:
 	void on_actionInvert_triggered();
 	void on_actionFSHS_triggered(); // Full Scale Histogram Strech
 	void on_actionEH_triggered(); // Equalization of Histogram 
-	void on_actionConvolution_triggered();
+	void on_actionConvolution_triggered(); // Convolution + Un/Mirroring
+	void on_actionLinearHeatEq_Scheme_triggered();
 };

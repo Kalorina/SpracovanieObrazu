@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>818</width>
+    <width>1019</width>
     <height>646</height>
    </rect>
   </property>
@@ -20,7 +20,28 @@
       <property name="title">
        <string>Controls</string>
       </property>
-      <layout class="QGridLayout" name="gridLayout"/>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="2">
+        <widget class="QDoubleSpinBox" name="timeStepdoubleSpinBox"/>
+       </item>
+       <item row="0" column="2">
+        <widget class="QSpinBox" name="stepCountspinBox"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Time Step Size</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Time Step Count</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
     <item>
@@ -33,7 +54,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>728</width>
+         <width>796</width>
          <height>560</height>
         </rect>
        </property>
@@ -47,7 +68,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>818</width>
+     <width>1019</width>
      <height>33</height>
     </rect>
    </property>
@@ -69,6 +90,7 @@
     <addaction name="actionFSHS"/>
     <addaction name="actionEH"/>
     <addaction name="actionConvolution"/>
+    <addaction name="actionLinearHeatEq_Scheme"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
@@ -144,6 +166,21 @@
   <action name="actionConvolution">
    <property name="text">
     <string>Convolution</string>
+   </property>
+  </action>
+  <action name="actionExplicite_Scheme">
+   <property name="text">
+    <string>Explicite Scheme</string>
+   </property>
+  </action>
+  <action name="actionExplicit_Scheme">
+   <property name="text">
+    <string>Explicit Scheme</string>
+   </property>
+  </action>
+  <action name="actionLinearHeatEq_Scheme">
+   <property name="text">
+    <string>LinearHeatEq Scheme</string>
    </property>
   </action>
  </widget>

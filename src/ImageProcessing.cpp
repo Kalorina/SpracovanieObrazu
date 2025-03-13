@@ -11,15 +11,17 @@ ImageProcessing::~ImageProcessing() {
 
 QImage ImageProcessing::pixelsMirror(QImage img, int padding)
 {
-	if (img.format() != QImage::Format_Grayscale8) {
-		qDebug() << "Error: Image must be in Format_Grayscale8.";
-		return QImage();
-	}
+	if (img.format() != QImage::Format_Grayscale8) {return QImage();}
 
 	m_imgWidth = img.width();
 	m_imgHeight = img.height();
 	int bytesPerLine = img.bytesPerLine();
 	const uchar* originalImgData = img.bits();  // Get raw image data
+
+	// Compute new size with padding
+	int imgWidthMirrored = img.width() + 2 * padding;
+	int imgHeightMirrored = img.height() + 2 * padding;
+	size_t size = static_cast<size_t>(imgWidthMirrored) * imgHeightMirrored;
 
 	// Check if memory needs to be cleared
 	if (m_pImgLocalData != nullptr)
@@ -27,11 +29,6 @@ QImage ImageProcessing::pixelsMirror(QImage img, int padding)
 		delete[] m_pImgLocalData;
 		m_pImgLocalData = nullptr;
 	}
-
-	// Compute new size with padding
-	int imgWidthMirrored = img.width() + 2 * padding;
-	int imgHeightMirrored = img.height() + 2 * padding;
-	size_t size = static_cast<size_t>(imgWidthMirrored) * imgHeightMirrored;
 
 	// Allocate memory for padded image
 	m_pImgLocalData = (double*)calloc(size, sizeof(double));
@@ -53,43 +50,33 @@ QImage ImageProcessing::pixelsMirror(QImage img, int padding)
 	}
 
 	// Mirror over Upper and Lower edges
-	temp = 1;
-	for (int i = 0; i < padding; i++)
-	{
-		for (int j = padding; j < imgWidthMirrored - padding; j++)
-		{
+	for (int i = 0; i < padding; i++) {
+		for (int j = padding; j < imgWidthMirrored - padding; j++) {
 			// Upper edge
-			indexOld = (i + padding) * imgWidthMirrored + j;
-			indexNew = (i + padding - temp) * imgWidthMirrored + j;
-			m_pImgLocalData[indexNew] = m_pImgLocalData[indexOld];
+			indexNew = (i)*imgWidthMirrored + j; // Upper edge
+			m_pImgLocalData[indexNew] = m_pImgLocalData[(padding)*imgWidthMirrored + j];
 
 			// Lower edge
-			indexOld = (imgHeightMirrored - i - padding - 1) * imgWidthMirrored + j;
-			indexNew = (imgHeightMirrored - i - padding + temp - 1) * imgWidthMirrored + j;
-			m_pImgLocalData[indexNew] = m_pImgLocalData[indexOld];
+			indexNew = (imgHeightMirrored - i - 1) * imgWidthMirrored + j; // Lower edge
+			m_pImgLocalData[indexNew] = m_pImgLocalData[(imgHeightMirrored - padding - 1) * imgWidthMirrored + j];
 		}
-		temp += 2;
 	}
 
 	// Mirror over Left and Right edges
-	for (int i = 0; i < imgHeightMirrored; i++)
-	{
-		temp = 1;
-		for (int j = 0; j < padding; j++)
-		{
+	for (int i = 0; i < imgHeightMirrored; i++) {
+		for (int j = 0; j < padding; j++) {
 			// Left edge
-			indexOld = i * imgWidthMirrored + (j + padding);
-			indexNew = i * imgWidthMirrored + (j + padding - temp);
+			int indexOld = i * imgWidthMirrored + (j + padding); // Original pixel position
+			int indexNew = i * imgWidthMirrored + (j + padding - (j + 1)); // Mirrored position
 			m_pImgLocalData[indexNew] = m_pImgLocalData[indexOld];
 
 			// Right edge
-			indexOld = i * imgWidthMirrored + (imgWidthMirrored - padding - 1 - j);
-			indexNew = i * imgWidthMirrored + (imgWidthMirrored - padding - 1 - j + temp);
+			indexOld = i * imgWidthMirrored + (imgWidthMirrored - padding - 1 - j); // Original pixel position
+			indexNew = i * imgWidthMirrored + (imgWidthMirrored - padding + j); // Mirrored position
 			m_pImgLocalData[indexNew] = m_pImgLocalData[indexOld];
-
-			temp += 2;
 		}
 	}
+
 	// Convert to QImage
 	QImage img_mirrored(imgWidthMirrored, imgHeightMirrored, QImage::Format_Grayscale8);
 	uchar* imageData = img_mirrored.bits(); // pointer for data
@@ -98,7 +85,7 @@ QImage ImageProcessing::pixelsMirror(QImage img, int padding)
 		for (int j = 0; j < imgWidthMirrored; j++) {
 			int index = i * imgWidthMirrored + j;
 			int pixelValue = static_cast<int>(m_pImgLocalData[index] * 255.0);  // Scale to 0-255
-			//pixelValue = qBound(0, pixelValue, 255);  // Ensure within valid range
+			pixelValue = qBound(0, pixelValue, 255);  // Ensure within valid range
 
 			imageData[i * img_mirrored.bytesPerLine() + j] = static_cast<uchar>(pixelValue);
 		}
@@ -128,7 +115,7 @@ QImage ImageProcessing::pixelsUnmirror(QImage img, int padding)
 	int xOffset = (mirroredWidth - originalWidth) / 2;
 	int yOffset = (mirroredHeight - originalHeight) / 2;
 
-	return img.copy(xOffset, yOffset, originalWidth, originalHeight);
+	return img.copy(xOffset, yOffset, originalWidth+2, originalHeight+2);
 }
 
 QImage ImageProcessing::Convolution(QImage img, int padding)
@@ -168,6 +155,17 @@ QImage ImageProcessing::Convolution(QImage img, int padding)
 	resultImg = pixelsUnmirror(resultImg, padding);
 	exportToPGM(resultImg, "Unmirrored_test.pgm");
 	return resultImg;
+}
+
+
+QVector<QImage> ImageProcessing::schemeExplicit(QImage img, int stepCount, double timeStep)
+{
+	return QVector<QImage>();
+}
+
+QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, double timeStep)
+{
+	return QVector<QImage>();
 }
 
 QVector<int> ImageProcessing::computeHistogram(QImage img) {
