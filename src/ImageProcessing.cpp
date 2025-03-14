@@ -37,7 +37,6 @@ QImage ImageProcessing::pixelsMirror(QImage img, int padding)
 
 	int indexNew = 0, indexOld = 0;
 	double tempD = 0.0;
-	int temp = 0;
 
 	// Copy the original image into the center of the padded image
 	for (int i = 0; i < m_imgHeight; i++) {
@@ -51,23 +50,27 @@ QImage ImageProcessing::pixelsMirror(QImage img, int padding)
 
 	// Mirror over Upper and Lower edges
 	for (int i = 0; i < padding; i++) {
-		for (int j = padding; j < imgWidthMirrored - padding; j++) {
+		for (int j = 0; j < imgWidthMirrored; j++) {
 			// Upper edge
-			indexNew = (i)*imgWidthMirrored + j; // Upper edge
-			m_pImgLocalData[indexNew] = m_pImgLocalData[(padding)*imgWidthMirrored + j];
+			indexOld = (padding + i) * imgWidthMirrored + j;
+			indexNew = (padding - i - 1) * imgWidthMirrored + j;
+			m_pImgLocalData[indexNew] = m_pImgLocalData[indexOld];
 
-			// Lower edge
-			indexNew = (imgHeightMirrored - i - 1) * imgWidthMirrored + j; // Lower edge
-			m_pImgLocalData[indexNew] = m_pImgLocalData[(imgHeightMirrored - padding - 1) * imgWidthMirrored + j];
+			// Lower edge (mirror upward)
+			// Lower edge (mirror upward correctly)
+			indexOld = (imgHeightMirrored - padding - 1 - i) * imgWidthMirrored + j; // Reflecting row
+			indexNew = (imgHeightMirrored - padding + i) * imgWidthMirrored + j; // Proper mirrored position
+			m_pImgLocalData[indexNew] = m_pImgLocalData[indexOld];
 		}
 	}
+
 
 	// Mirror over Left and Right edges
 	for (int i = 0; i < imgHeightMirrored; i++) {
 		for (int j = 0; j < padding; j++) {
 			// Left edge
-			int indexOld = i * imgWidthMirrored + (j + padding); // Original pixel position
-			int indexNew = i * imgWidthMirrored + (j + padding - (j + 1)); // Mirrored position
+			indexOld = i * imgWidthMirrored + (j + padding); // Original pixel position 
+			indexNew = i * imgWidthMirrored + (padding - j - 1); // Mirrored position
 			m_pImgLocalData[indexNew] = m_pImgLocalData[indexOld];
 
 			// Right edge
@@ -98,8 +101,6 @@ QImage ImageProcessing::pixelsMirror(QImage img, int padding)
 
 QImage ImageProcessing::pixelsUnmirror(QImage img, int padding)
 {
-	if (m_pImgLocalData == nullptr) {return QImage();}
-
 	int mirroredWidth = img.width();
 	int mirroredHeight = img.height();
 
@@ -115,48 +116,54 @@ QImage ImageProcessing::pixelsUnmirror(QImage img, int padding)
 	int xOffset = (mirroredWidth - originalWidth) / 2;
 	int yOffset = (mirroredHeight - originalHeight) / 2;
 
-	return img.copy(xOffset, yOffset, originalWidth+2, originalHeight+2);
+	QImage resultImg = img.copy(padding, padding, originalWidth, originalHeight);
+	exportToPGM(resultImg, "Unmirrored_test.pgm");
+
+	return resultImg;
 }
 
 QImage ImageProcessing::Convolution(QImage img, int padding)
 {
-	QImage resultImg = img.copy();
+	QImage mirroredImg = img.copy();
 
 	// Mirroring 
-	resultImg = pixelsMirror(resultImg, padding);
+	mirroredImg = pixelsMirror(mirroredImg, padding);
 
 	// Convolution
+	
+	int mirroredWidth = mirroredImg.width();
+	int mirroredHeight = mirroredImg.height();
+
+	// output image with original size
+	QImage outputImg(img.size(), QImage::Format_Grayscale8);
+
 	int maskRadius = convolution_mask.size() / 2;
 
-	for (int y = 0; y < img.height(); ++y) {
+	for (int y = 0; y < img.height(); ++y) { 
 		for (int x = 0; x < img.width(); ++x) {
 			int newValue = 0;
-			
-			// Convolution mask
+
 			for (int ky = -maskRadius; ky <= maskRadius; ++ky) {
 				for (int kx = -maskRadius; kx <= maskRadius; ++kx) {
+					// Compute coordinates in the **mirrored** image
+					int pixelX = x + kx + padding;
+					int pixelY = y + ky + padding;
 
-					// qBound(min, value, max) -> ensures range <max,min>
-					int pixelX = qBound(0, x + kx, img.width() - 1);
-					int pixelY = qBound(0, y + ky, img.height() - 1);
+					int grayValue = qGray(mirroredImg.pixel(pixelX, pixelY));
 
-					// Get the grayscale value of the pixel
-					int grayValue = qGray(img.pixel(pixelX, pixelY));
 					newValue += grayValue * convolution_mask[ky + maskRadius][kx + maskRadius];
 				}
 			}
-			// Grayscale to RGB
+
+			// qBound(min, value, max) -> ensures range <max,min>
 			newValue = qBound(0, newValue, 255);
-			resultImg.setPixelColor(x, y, QColor(newValue, newValue, newValue)); // Set the new pixel value
+
+			outputImg.setPixelColor(x, y, QColor(newValue, newValue, newValue));
 		}
 	}
-
-	// Un-Mirroring
-	resultImg = pixelsUnmirror(resultImg, padding);
-	exportToPGM(resultImg, "Unmirrored_test.pgm");
-	return resultImg;
+	exportToPGM(outputImg, "Unmirrored_test.pgm");
+	return outputImg;
 }
-
 
 QVector<QImage> ImageProcessing::schemeExplicit(QImage img, int stepCount, double timeStep)
 {
