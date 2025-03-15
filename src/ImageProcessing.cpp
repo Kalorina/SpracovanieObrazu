@@ -172,11 +172,12 @@ QVector<QImage> ImageProcessing::schemeExplicit(QImage img, int stepCount, doubl
 	QVector<QImage> images;
 
 	// Convert to grayscale if img is RGB
-	// QImage currentImg = img.convertToFormat(QImage::Format_Grayscale8);
-	QImage currentImg = pixelsMirror(img, 1);
+	QImage currentImg = img.convertToFormat(QImage::Format_Grayscale8);
 
 	for (int step = 0; step < stepCount; step++) {
-		QImage nextImg = currentImg;
+		// Intensity Mean Unmirrored 
+		double initialMean = computeImageMeanIntesity(currentImg);
+		QImage nextImg = pixelsMirror(currentImg, 1);
 
 		for (int y = 1; y < img.height() - 1; y++) {
 			for (int x = 1; x < img.width() - 1; x++) {
@@ -195,9 +196,27 @@ QVector<QImage> ImageProcessing::schemeExplicit(QImage img, int stepCount, doubl
 				nextImg.setPixel(x, y, qRgb(newVal, newVal, newVal));
 			}
 		}
+		// Unmirrored
+		nextImg = nextImg.copy(1, 1, img.width(), img.height());
 
-		images.append(nextImg.copy(1, 1, img.width(), img.height())); // append unmirrored image 
-		currentImg = nextImg;    
+		// Normalize intensity to conserve mean
+		double newMean = computeImageMeanIntesity(nextImg);
+		if (newMean > 0) {
+			double correctionFactor = initialMean / newMean;
+			for (int y = 0; y < img.height(); y++) {
+				for (int x = 0; x < img.width(); x++) {
+					int correctedVal = qGray(nextImg.pixel(x, y)) * correctionFactor;
+					correctedVal = qBound(0, correctedVal, 255);
+					nextImg.setPixel(x, y, qRgb(correctedVal, correctedVal, correctedVal));
+				}
+			}
+		}
+
+		qDebug() << "Mean of image intesity initial:" << initialMean;
+		qDebug() << "Mean of image intesity new    :" << newMean;
+		 
+		images.append(nextImg); 
+		currentImg = nextImg;
 	}
 
 	return images;
@@ -207,6 +226,22 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 {
 	qDebug() << "Linear Heat Eq Implicit scheme";
 	return QVector<QImage>();
+}
+
+double ImageProcessing::computeImageMeanIntesity(QImage img)
+{
+	if (img.isNull()) return 0.0;
+
+	qint64 sumIntensity = 0.0;
+	for (int y = 0; y < img.height(); y++)
+	{
+		for (int x = 0; x < img.width(); x++)
+		{
+			sumIntensity += qGray(img.pixel(x, y)); // grayscale intensity
+		}
+	}
+
+	return (double)sumIntensity / (img.width() * img.height());
 }
 
 QVector<int> ImageProcessing::computeHistogram(QImage img) {

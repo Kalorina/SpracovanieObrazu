@@ -181,9 +181,7 @@ void ImageViewer::on_actionConvolution_triggered()
 }
 void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 {
-	if (vW->isEmpty()) {
-		false;
-	}
+	if (vW->isEmpty()) false;
 
 	stepCount = ui->stepCountspinBox->value();  
 	timeStep = ui->timeStepdoubleSpinBox->value();
@@ -208,5 +206,4 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 			vW->update();
 		}
 	}
-
 }
