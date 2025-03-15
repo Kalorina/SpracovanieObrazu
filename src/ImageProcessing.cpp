@@ -167,11 +167,45 @@ QImage ImageProcessing::Convolution(QImage img, int padding)
 
 QVector<QImage> ImageProcessing::schemeExplicit(QImage img, int stepCount, double timeStep)
 {
-	return QVector<QImage>();
+	qDebug() << "Linear Heat Eq Explicit scheme with mirroring";
+
+	QVector<QImage> images;
+
+	// Convert to grayscale if img is RGB
+	// QImage currentImg = img.convertToFormat(QImage::Format_Grayscale8);
+	QImage currentImg = pixelsMirror(img, 1);
+
+	for (int step = 0; step < stepCount; step++) {
+		QImage nextImg = currentImg;
+
+		for (int y = 1; y < img.height() - 1; y++) {
+			for (int x = 1; x < img.width() - 1; x++) {
+				int u_p_n = qGray(currentImg.pixel(x, y));
+
+				int u_q1 = qGray(currentImg.pixel(x + 1, y)); // Right neighbor
+				int u_q2 = qGray(currentImg.pixel(x - 1, y)); // Left neighbor
+				int u_q3 = qGray(currentImg.pixel(x, y + 1)); // Bottom neighbor
+				int u_q4 = qGray(currentImg.pixel(x, y - 1)); // Top neighbor
+
+				// newVal = u_p_n+1
+				int newVal = (1 - 4 * timeStep) * u_p_n + timeStep * (u_q1 + u_q2 + u_q3 + u_q4);
+				// qBound(min, value, max) -> value in <min, max>
+				newVal = qBound(0, newVal, 255);
+
+				nextImg.setPixel(x, y, qRgb(newVal, newVal, newVal));
+			}
+		}
+
+		images.append(nextImg.copy(1, 1, img.width(), img.height())); // append unmirrored image 
+		currentImg = nextImg;    
+	}
+
+	return images;
 }
 
 QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, double timeStep)
 {
+	qDebug() << "Linear Heat Eq Implicit scheme";
 	return QVector<QImage>();
 }
 

@@ -192,8 +192,21 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 	qDebug() << "Time Step:" << timeStep;
 
 	ImageProcessing IPmodul;
-	QImage new_img;
-	new_img = IPmodul.Convolution(*vW->getImage(), 2);
-	vW->setImage(new_img);
-	vW->update();
+	if (timeStep > 0.2) {
+		QVector<QImage> new_imgs = IPmodul.schemeImplicit(*vW->getImage(), stepCount, timeStep);
+		if (!new_imgs.isEmpty()) { 
+			qDebug() << "Showing last solution of T=" << stepCount;
+			vW->setImage(new_imgs.last());
+			vW->update();
+		}
+	}
+	else {
+		QVector<QImage> new_imgs = IPmodul.schemeExplicit(*vW->getImage(), stepCount, timeStep);
+		if (!new_imgs.isEmpty()) {
+			qDebug() << "Showing last solution of T=" << stepCount;
+			vW->setImage(new_imgs.last());
+			vW->update();
+		}
+	}
+
 }
