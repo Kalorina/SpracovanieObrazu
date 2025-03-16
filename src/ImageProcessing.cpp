@@ -167,7 +167,7 @@ QImage ImageProcessing::Convolution(QImage img, int padding)
 
 QVector<QImage> ImageProcessing::schemeExplicit(QImage img, int stepCount, double timeStep)
 {
-	qDebug() << "Linear Heat Eq Explicit scheme with mirroring";
+	qDebug() << "Linear Heat Eq Explicit scheme";
 
 	QVector<QImage> images;
 
@@ -175,8 +175,6 @@ QVector<QImage> ImageProcessing::schemeExplicit(QImage img, int stepCount, doubl
 	QImage currentImg = img.convertToFormat(QImage::Format_Grayscale8);
 
 	for (int step = 0; step < stepCount; step++) {
-		// Intensity Mean Unmirrored 
-		double initialMean = computeImageMeanIntesity(currentImg);
 		QImage nextImg = pixelsMirror(currentImg, 1);
 
 		for (int y = 1; y < img.height() - 1; y++) {
@@ -196,27 +194,88 @@ QVector<QImage> ImageProcessing::schemeExplicit(QImage img, int stepCount, doubl
 				nextImg.setPixel(x, y, qRgb(newVal, newVal, newVal));
 			}
 		}
-		// Unmirrored
-		nextImg = nextImg.copy(1, 1, img.width(), img.height());
 
-		// Normalize intensity to conserve mean
-		double newMean = computeImageMeanIntesity(nextImg);
-		if (newMean > 0) {
-			double correctionFactor = initialMean / newMean;
-			for (int y = 0; y < img.height(); y++) {
-				for (int x = 0; x < img.width(); x++) {
-					int correctedVal = qGray(nextImg.pixel(x, y)) * correctionFactor;
-					correctedVal = qBound(0, correctedVal, 255);
-					nextImg.setPixel(x, y, qRgb(correctedVal, correctedVal, correctedVal));
-				}
+		qDebug() << "Intensity Mean:" << computeImageMeanIntesity(nextImg);;
+
+		images.append(nextImg.copy(1, 1, img.width(), img.height()));
+		currentImg = nextImg;
+	}
+
+	return images;
+}
+
+QVector<QImage> ImageProcessing::schemeExplicitFloat(QImage img, int stepCount, double timeStep)
+{
+	qDebug() << "Linear Heat Eq Explicit scheme with floating-point precision";
+
+	// Convert to grayscale if img is RGB
+	// QImage img = img.convertToFormat(QImage::Format_Grayscale8);
+
+	QImage m_img = pixelsMirror(img, 1);
+
+	QVector<QImage> images;
+	QVector<QVector<float>> pixelValues(m_img.width(), QVector<float>(m_img.height(), 0.0));
+
+	// original image values
+	for (int x = 0; x < m_img.width(); x++) {
+		for (int y = 0; y < m_img.height(); y++) {
+			pixelValues[x][y] = qGray(m_img.pixel(x, y));
+		}
+	}
+
+	for (int step = 0; step < stepCount; step++)
+	{
+		QImage currentImg(img.width(), img.height(), QImage::Format_Grayscale8);
+		// currentImg = width x height from img original -> without mirroring 
+		// pixels values 2D vecotr = width+2 x height+2 -> with mirroring padding:1
+		QVector<QVector<float>> newPixelValues = pixelValues;
+
+		for (int x = 1; x < m_img.width() - 1; x++) {
+			for (int y = 1; y < m_img.height() - 1; y++) {
+				float u_p_n = pixelValues[x][y];
+
+				// Mirrored neighbors
+				float u_q1 = pixelValues[x + 1][y];
+				float u_q2 = pixelValues[x - 1][y];
+				float u_q3 = pixelValues[x][y + 1];
+				float u_q4 = pixelValues[x][y - 1];
+
+				newPixelValues[x][y] = (1 - 4 * timeStep) * u_p_n + timeStep * (u_q1 + u_q2 + u_q3 + u_q4);
+			}
+		}
+		// all new pixel values updated /w mirrored pixels 
+		pixelValues = newPixelValues;
+
+		// boundary is updated so that the flux on boundary stays the same 
+		// edges
+		for (int x = 1; x < m_img.width() - 1; x++) {
+			pixelValues[x][0] = pixelValues[x][1];									// Top boundary
+			pixelValues[x][m_img.height() - 1] = pixelValues[x][m_img.height() - 2];	// Bottom boundary
+		}
+		for (int y = 1; y < m_img.height() - 1; y++) {
+			pixelValues[0][y] = pixelValues[1][y];									// Left boundary
+			pixelValues[m_img.width() - 1][y] = pixelValues[m_img.width() - 2][y];		// Right boundary
+		}
+
+		// corners 
+		pixelValues[0][0] = pixelValues[1][1];																	// Top-left
+		pixelValues[m_img.width() - 1][0] = pixelValues[m_img.width() - 2][1];									// Top-right
+		pixelValues[0][m_img.height() - 1] = pixelValues[1][m_img.height() - 2];								// Bottom-left
+		pixelValues[m_img.width() - 1][m_img.height() - 1] = pixelValues[m_img.width() - 2][m_img.height() - 2];// Bottom-right
+
+		// the pixel values back to an image
+		for (int x = 1; x < m_img.width() - 1; x++) {
+			for (int y = 1; y < m_img.height() - 1; y++) {
+				// qBound(min, value, max) -> value in <min, max>
+				int newVal = qBound(0, (int)pixelValues[x][y], 255);
+				currentImg.setPixel(x - 1, y - 1, qRgb(newVal, newVal, newVal)); 
 			}
 		}
 
-		qDebug() << "Mean of image intesity initial:" << initialMean;
-		qDebug() << "Mean of image intesity new    :" << newMean;
-		 
-		images.append(nextImg); 
-		currentImg = nextImg;
+		float currentMean = computeImageMeanIntesity(currentImg);
+		qDebug() << "Intensity Mean:" << currentMean;
+
+		images.append(currentImg);
 	}
 
 	return images;
@@ -228,7 +287,7 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 	return QVector<QImage>();
 }
 
-double ImageProcessing::computeImageMeanIntesity(QImage img)
+float ImageProcessing::computeImageMeanIntesity(QImage img)
 {
 	if (img.isNull()) return 0.0;
 
@@ -241,7 +300,7 @@ double ImageProcessing::computeImageMeanIntesity(QImage img)
 		}
 	}
 
-	return (double)sumIntensity / (img.width() * img.height());
+	return (float)sumIntensity / (img.width() * img.height());
 }
 
 QVector<int> ImageProcessing::computeHistogram(QImage img) {

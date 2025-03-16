@@ -186,22 +186,23 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 	stepCount = ui->stepCountspinBox->value();  
 	timeStep = ui->timeStepdoubleSpinBox->value();
 
-	qDebug() << "Step Count:" << stepCount;
-	qDebug() << "Time Step:" << timeStep;
+	// qDebug() << "Step Count:" << stepCount;
+	// qDebug() << "Time Step:" << timeStep;
 
 	ImageProcessing IPmodul;
 	if (timeStep > 0.2) {
 		QVector<QImage> new_imgs = IPmodul.schemeImplicit(*vW->getImage(), stepCount, timeStep);
 		if (!new_imgs.isEmpty()) { 
-			qDebug() << "Showing last solution of T=" << stepCount;
+			qDebug() << "Showing last solution of T =" << stepCount;
 			vW->setImage(new_imgs.last());
 			vW->update();
 		}
 	}
 	else {
-		QVector<QImage> new_imgs = IPmodul.schemeExplicit(*vW->getImage(), stepCount, timeStep);
+		//QVector<QImage> new_imgs = IPmodul.schemeExplicit(*vW->getImage(), stepCount, timeStep);
+		QVector<QImage> new_imgs = IPmodul.schemeExplicitFloat(*vW->getImage(), stepCount, timeStep);
 		if (!new_imgs.isEmpty()) {
-			qDebug() << "Showing last solution of T=" << stepCount;
+			qDebug() << "Showing last solution of T =" << stepCount;
 			vW->setImage(new_imgs.last());
 			vW->update();
 		}
