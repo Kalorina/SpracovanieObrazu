@@ -206,10 +206,10 @@ QVector<QImage> ImageProcessing::schemeExplicit(QImage img, int stepCount, doubl
 
 QVector<QImage> ImageProcessing::schemeExplicitFloat(QImage img, int stepCount, double timeStep)
 {
-	qDebug() << "Linear Heat Eq Explicit scheme with floating-point precision";
+	qDebug() << "Linear Heat Eq Explicit scheme";
 
 	// Convert to grayscale if img is RGB
-	// QImage img = img.convertToFormat(QImage::Format_Grayscale8);
+	img = img.convertToFormat(QImage::Format_Grayscale8);
 
 	QImage m_img = pixelsMirror(img, 1);
 
@@ -272,8 +272,10 @@ QVector<QImage> ImageProcessing::schemeExplicitFloat(QImage img, int stepCount, 
 			}
 		}
 
-		float currentMean = computeImageMeanIntesity(currentImg);
-		qDebug() << "Intensity Mean:" << currentMean;
+		// double currentMean = computeImageMeanIntesity(currentImg);
+		// qDebug() << "Intensity Mean:" << currentMean; 
+		float currentMean2 = computeImageMeanIntesity(pixelValues, img.width(), img.height());
+		qDebug() << "Intensity Mean:" << currentMean2;
 
 		images.append(currentImg);
 	}
@@ -287,7 +289,7 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 	return QVector<QImage>();
 }
 
-float ImageProcessing::computeImageMeanIntesity(QImage img)
+double ImageProcessing::computeImageMeanIntesity(QImage img)
 {
 	if (img.isNull()) return 0.0;
 
@@ -300,7 +302,20 @@ float ImageProcessing::computeImageMeanIntesity(QImage img)
 		}
 	}
 
-	return (float)sumIntensity / (img.width() * img.height());
+	return (double)sumIntensity / (img.width() * img.height());
+}
+
+float ImageProcessing::computeImageMeanIntesity(QVector<QVector<float>> pixelsValues, int width, int height)
+{
+	if (pixelsValues.isEmpty()) return 0.0;
+
+	float sumIntensity = 0.0;
+	for (int x = 0; x < width; x++){
+		for (int y = 0; y < height; y++){
+			sumIntensity += pixelsValues[x][y]; 
+		}
+	}
+	return (float)sumIntensity / (width * height);
 }
 
 QVector<int> ImageProcessing::computeHistogram(QImage img) {

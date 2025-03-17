@@ -55,7 +55,8 @@ public:
 	QVector<QImage> schemeExplicitFloat(QImage img, int stepCount, double timeStep);
 
 	QVector<QImage> schemeImplicit(QImage img, int stepCount, double timeStep);
-	float computeImageMeanIntesity(QImage img);
+	double computeImageMeanIntesity(QImage img);
+	float computeImageMeanIntesity(QVector<QVector<float>> pixelsValues, int width, int height);
 
 	QVector<int> computeHistogram(QImage img);
 	QImage FSHS(QImage img); // Full Scale Histogram Strech
