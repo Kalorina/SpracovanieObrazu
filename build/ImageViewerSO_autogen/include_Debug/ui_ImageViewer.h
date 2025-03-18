@@ -49,10 +49,12 @@ public:
     QHBoxLayout *horizontalLayout;
     QGroupBox *groupBox;
     QGridLayout *gridLayout;
-    QDoubleSpinBox *timeStepdoubleSpinBox;
-    QSpinBox *stepCountspinBox;
     QLabel *label_2;
     QLabel *label;
+    QLabel *label_3;
+    QSpinBox *stepCountspinBox;
+    QSpinBox *IDiterationsspinBox;
+    QDoubleSpinBox *timeStepdoubleSpinBox;
     QScrollArea *scrollArea;
     QWidget *scrollAreaWidgetContents;
     QMenuBar *menuBar;
@@ -106,16 +108,6 @@ public:
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName("gridLayout");
-        timeStepdoubleSpinBox = new QDoubleSpinBox(groupBox);
-        timeStepdoubleSpinBox->setObjectName("timeStepdoubleSpinBox");
-
-        gridLayout->addWidget(timeStepdoubleSpinBox, 1, 2, 1, 1);
-
-        stepCountspinBox = new QSpinBox(groupBox);
-        stepCountspinBox->setObjectName("stepCountspinBox");
-
-        gridLayout->addWidget(stepCountspinBox, 0, 2, 1, 1);
-
         label_2 = new QLabel(groupBox);
         label_2->setObjectName("label_2");
 
@@ -126,6 +118,26 @@ public:
 
         gridLayout->addWidget(label, 0, 0, 1, 1);
 
+        label_3 = new QLabel(groupBox);
+        label_3->setObjectName("label_3");
+
+        gridLayout->addWidget(label_3, 2, 0, 1, 1);
+
+        stepCountspinBox = new QSpinBox(groupBox);
+        stepCountspinBox->setObjectName("stepCountspinBox");
+
+        gridLayout->addWidget(stepCountspinBox, 0, 2, 1, 1);
+
+        IDiterationsspinBox = new QSpinBox(groupBox);
+        IDiterationsspinBox->setObjectName("IDiterationsspinBox");
+
+        gridLayout->addWidget(IDiterationsspinBox, 2, 2, 1, 1);
+
+        timeStepdoubleSpinBox = new QDoubleSpinBox(groupBox);
+        timeStepdoubleSpinBox->setObjectName("timeStepdoubleSpinBox");
+
+        gridLayout->addWidget(timeStepdoubleSpinBox, 1, 2, 1, 1);
+
 
         horizontalLayout->addWidget(groupBox);
 
@@ -134,7 +146,7 @@ public:
         scrollArea->setWidgetResizable(true);
         scrollAreaWidgetContents = new QWidget();
         scrollAreaWidgetContents->setObjectName("scrollAreaWidgetContents");
-        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 796, 560));
+        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 788, 560));
         scrollArea->setWidget(scrollAreaWidgetContents);
 
         horizontalLayout->addWidget(scrollArea);
@@ -200,8 +212,9 @@ public:
         actionExplicit_Scheme->setText(QCoreApplication::translate("ImageViewerClass", "Explicit Scheme", nullptr));
         actionLinearHeatEq_Scheme->setText(QCoreApplication::translate("ImageViewerClass", "LinearHeatEq Scheme", nullptr));
         groupBox->setTitle(QCoreApplication::translate("ImageViewerClass", "Controls", nullptr));
-        label_2->setText(QCoreApplication::translate("ImageViewerClass", "Time Step Size", nullptr));
-        label->setText(QCoreApplication::translate("ImageViewerClass", "Time Step Count", nullptr));
+        label_2->setText(QCoreApplication::translate("ImageViewerClass", "Time Step Size:", nullptr));
+        label->setText(QCoreApplication::translate("ImageViewerClass", "Time Step Count:", nullptr));
+        label_3->setText(QCoreApplication::translate("ImageViewerClass", "Image of iteration:", nullptr));
         menuFile->setTitle(QCoreApplication::translate("ImageViewerClass", "File", nullptr));
         menuImage->setTitle(QCoreApplication::translate("ImageViewerClass", "Image", nullptr));
     } // retranslateUi

@@ -14,6 +14,13 @@ ImageViewer::ImageViewer(QWidget* parent)
 
 	ui->stepCountspinBox->setValue(10);
 	ui->timeStepdoubleSpinBox->setValue(0.2);
+	ui->IDiterationsspinBox->setEnabled(false);
+	ui->IDiterationsspinBox->setMinimum(0);
+	// connects changes from user to trigger updateImageFromSpinBoxExplicitLH() 
+	connect(ui->IDiterationsspinBox, 
+		QOverload<int>::of(&QSpinBox::valueChanged),
+		this, 
+		&ImageViewer::updateImageFromSpinBoxExplicitLH);
 
 	vW->setObjectName("ViewerWidget");
 }
@@ -136,11 +143,13 @@ void ImageViewer::on_actionOriginal_triggered()
 	if (vW->isEmpty()) {
 		false;
 	}
+	ui->IDiterationsspinBox->setEnabled(false);
 	vW->setImage(img_original);
 	vW->update();
 }
 void ImageViewer::on_actionInvert_triggered()
 {
+	ui->IDiterationsspinBox->setEnabled(false);
 	invertColors();
 }
 void ImageViewer::on_actionFSHS_triggered()
@@ -149,6 +158,7 @@ void ImageViewer::on_actionFSHS_triggered()
 		false;
 	}
 
+	ui->IDiterationsspinBox->setEnabled(false);
 	ImageProcessing IPmodul;
 	QImage new_img;
 	new_img = IPmodul.FSHS(*vW->getImage());
@@ -161,6 +171,7 @@ void ImageViewer::on_actionEH_triggered()
 		false;
 	}
 
+	ui->IDiterationsspinBox->setEnabled(false);
 	ImageProcessing IPmodul;
 	QImage new_img;
 	new_img = IPmodul.EH(*vW->getImage());
@@ -173,6 +184,7 @@ void ImageViewer::on_actionConvolution_triggered()
 		false;
 	}
 
+	ui->IDiterationsspinBox->setEnabled(false);
 	ImageProcessing IPmodul;
 	QImage new_img;
 	new_img = IPmodul.Convolution(*vW->getImage(), 2);
@@ -185,6 +197,7 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 
 	stepCount = ui->stepCountspinBox->value();  
 	timeStep = ui->timeStepdoubleSpinBox->value();
+	images_ES.clear();
 
 	// qDebug() << "Step Count:" << stepCount;
 	// qDebug() << "Time Step:" << timeStep;
@@ -200,11 +213,25 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 	}
 	else {
 		//QVector<QImage> new_imgs = IPmodul.schemeExplicit(*vW->getImage(), stepCount, timeStep);
+		images_ES.append(img_original);
 		QVector<QImage> new_imgs = IPmodul.schemeExplicitFloat(*vW->getImage(), stepCount, timeStep);
-		if (!new_imgs.isEmpty()) {
+		images_ES.append(new_imgs);
+		if (!images_ES.isEmpty()) {
 			qDebug() << "Showing last solution of T =" << stepCount;
-			vW->setImage(new_imgs.last());
-			vW->update();
+			int maxIter = images_ES.length() - 1;
+			ui->IDiterationsspinBox->setEnabled(true);
+			ui->IDiterationsspinBox->setMaximum(maxIter);
+			ui->IDiterationsspinBox->setValue(maxIter);
+			
+			updateImageFromSpinBoxExplicitLH(maxIter);
 		}
+	}
+}
+
+void ImageViewer::updateImageFromSpinBoxExplicitLH(int index)
+{
+	if (index >= 0 && index < images_ES.size()) {
+		vW->setImage(images_ES[index]);
+		vW->update();
 	}
 }
