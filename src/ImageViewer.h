@@ -55,6 +55,7 @@ private slots:
 	void on_actionEH_triggered(); // Equalization of Histogram 
 	void on_actionConvolution_triggered(); // Convolution + Un/Mirroring
 	void on_actionLinearHeatEq_Scheme_triggered();
+	void on_actionEdge_Detector_triggered();
 
 	void updateImageFromSpinBoxExplicitLH(int index);
 };

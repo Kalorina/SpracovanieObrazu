@@ -204,7 +204,7 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 
 	ImageProcessing IPmodul;
 	if (timeStep > 0.2) {
-		QVector<QImage> new_imgs = IPmodul.schemeImplicit(*vW->getImage(), stepCount, timeStep);
+		QVector<QImage> new_imgs = IPmodul.schemeImplicitFloat(*vW->getImage(), stepCount, timeStep);
 		if (!new_imgs.isEmpty()) { 
 			qDebug() << "Showing last solution of T =" << stepCount;
 			vW->setImage(new_imgs.last());
@@ -212,7 +212,6 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 		}
 	}
 	else {
-		//QVector<QImage> new_imgs = IPmodul.schemeExplicit(*vW->getImage(), stepCount, timeStep);
 		images_ES.append(img_original);
 		QVector<QImage> new_imgs = IPmodul.schemeExplicitFloat(*vW->getImage(), stepCount, timeStep);
 		images_ES.append(new_imgs);
@@ -227,7 +226,18 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 		}
 	}
 }
+void ImageViewer::on_actionEdge_Detector_triggered()
+{
+	if (vW->isEmpty()) {
+		false;
+	}
 
+	ui->IDiterationsspinBox->setEnabled(false);
+	ImageProcessing IPmodul;
+	QImage new_img;
+	IPmodul.EdgeDetector(*vW->getImage());
+	//QMessage
+}
 void ImageViewer::updateImageFromSpinBoxExplicitLH(int index)
 {
 	if (index >= 0 && index < images_ES.size()) {
@@ -235,3 +245,4 @@ void ImageViewer::updateImageFromSpinBoxExplicitLH(int index)
 		vW->update();
 	}
 }
+

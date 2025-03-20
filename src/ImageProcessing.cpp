@@ -165,6 +165,11 @@ QImage ImageProcessing::Convolution(QImage img, int padding)
 	return outputImg;
 }
 
+void ImageProcessing::EdgeDetector(QImage img)
+{
+
+}
+
 QVector<QImage> ImageProcessing::schemeExplicit(QImage img, int stepCount, double timeStep)
 {
 	qDebug() << "Linear Heat Eq Explicit scheme";
@@ -229,6 +234,7 @@ QVector<QImage> ImageProcessing::schemeExplicitFloat(QImage img, int stepCount, 
 		// currentImg = width x height from img original -> without mirroring 
 		// pixels values 2D vecotr = width+2 x height+2 -> with mirroring padding:1
 		QVector<QVector<float>> newPixelValues = pixelValues;
+		double norm = 0.0;
 
 		for (int x = 1; x < m_img.width() - 1; x++) {
 			for (int y = 1; y < m_img.height() - 1; y++) {
@@ -240,7 +246,8 @@ QVector<QImage> ImageProcessing::schemeExplicitFloat(QImage img, int stepCount, 
 				float u_q3 = pixelValues[x][y + 1];
 				float u_q4 = pixelValues[x][y - 1];
 
-				newPixelValues[x][y] = (1 - 4 * timeStep) * u_p_n + timeStep * (u_q1 + u_q2 + u_q3 + u_q4);
+				newPixelValues[x][y] = (1 - 4 * timeStep) * u_p_n 
+					+ timeStep * (u_q1 + u_q2 + u_q3 + u_q4);
 			}
 		}
 		// all new pixel values updated /w mirrored pixels 
@@ -272,10 +279,8 @@ QVector<QImage> ImageProcessing::schemeExplicitFloat(QImage img, int stepCount, 
 			}
 		}
 
-		// double currentMean = computeImageMeanIntesity(currentImg);
-		// qDebug() << "Intensity Mean:" << currentMean; 
-		float currentMean2 = computeImageMeanIntesity(pixelValues, img.width(), img.height());
-		qDebug() << "Intensity Mean:" << currentMean2;
+		float currentMean = computeImageMeanIntesity(pixelValues, img.width(), img.height());
+		qDebug() << "Intensity Mean:" << currentMean;
 
 		images.append(currentImg);
 	}
@@ -283,10 +288,109 @@ QVector<QImage> ImageProcessing::schemeExplicitFloat(QImage img, int stepCount, 
 	return images;
 }
 
-QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, double timeStep)
+QVector<QImage> ImageProcessing::schemeImplicitFloat(QImage img, int stepCount, double timeStep)
 {
-	qDebug() << "Linear Heat Eq Implicit scheme";
-	return QVector<QImage>();
+	double omega = 1.25;
+	int maxIter = 100;
+	double tolerance = 10E-6;
+
+	qDebug() << "Linear Heat Eq Implicit scheme SOR method MaxIter" << maxIter << " omega:" <<  omega << "tolerance:" << tolerance;
+
+	// Convert to grayscale if img is RGB
+	img = img.convertToFormat(QImage::Format_Grayscale8);
+
+	QImage m_img = pixelsMirror(img, 1);
+
+	QVector<QImage> images;
+	QVector<QVector<float>> pixelValues(m_img.width(), QVector<float>(m_img.height(), 0.0));
+	
+	double rez = 0.0;
+	double sigmaSOR = 0.0; // SOR algorithm variable
+	double Aii = 1.0 + 4 * timeStep; // = 1 + 4*tau
+	double Aij = -timeStep; // = -tau
+
+	// original image values
+	for (int x = 0; x < m_img.width(); x++) {
+		for (int y = 0; y < m_img.height(); y++) {
+			pixelValues[x][y] = qGray(m_img.pixel(x, y));
+		}
+	}
+
+	// Time Step LOOP
+	for (int step = 0; step < stepCount; step++) {
+		QImage currentImg(img.width(), img.height(), QImage::Format_Grayscale8);
+		// currentImg = width x height from img original -> without mirroring 
+		// pixels values 2D vecotr = width+2 x height+2 -> with mirroring padding:1
+		QVector<QVector<float>> newPixelValues = pixelValues;
+		double norm = 0.0;
+
+		// Neighbors
+		float u_left_old, u_right_old, u_top_old, u_bottom_old = 0.0;
+
+		// SOR Iterations LOOP
+		for (int iter = 0; iter < maxIter; iter++) {
+			
+			for (int x = 1; x < m_img.width() - 1; x++) {
+				for (int y = 1; y < m_img.height() - 1; y++) {
+
+					float oldVal = newPixelValues[x][y];
+
+					// Neighbors
+					float u_left = newPixelValues[x - 1][y]; // Updated in-place
+					float u_right = pixelValues[x + 1][y];
+					float u_top = newPixelValues[x][y - 1];  // Updated in-place
+					float u_bottom = pixelValues[x][y + 1];
+
+					float newVal = (1 - omega) * oldVal +
+						(omega / (1 + 4 * timeStep)) *
+						(pixelValues[x][y] + timeStep * (u_left + u_right + u_top + u_bottom));
+					
+					// NEKONVERGUJE OPRAVIT
+					
+					//float values = Aij * (u_top + u_bottom + u_right + u_left);
+					//float newVal = (1 - omega) * oldVal + omega/Aii * values;
+
+					newPixelValues[x][y] = newVal;
+
+					// residuals -> L2-norm
+					norm += std::pow(newVal - oldVal, 2);
+				}
+			}
+			// Check for convergence
+			norm = std::sqrt(norm);
+			if (norm < tolerance) {
+				qDebug() << "SOR Converged at iteration:" << iter << "with norm:" << norm;
+				break;
+			}
+		}
+
+		pixelValues = newPixelValues;
+
+		// mirroring: boundary conditions -> zero flux
+		for (int x = 1; x < m_img.width() - 1; x++) {
+			pixelValues[x][0] = pixelValues[x][1];									// Top boundary
+			pixelValues[x][m_img.height() - 1] = pixelValues[x][m_img.height() - 2];// Bottom boundary
+		}
+		for (int y = 1; y < m_img.height() - 1; y++) {
+			pixelValues[0][y] = pixelValues[1][y];									// Left boundary
+			pixelValues[m_img.width() - 1][y] = pixelValues[m_img.width() - 2][y];	// Right boundary
+		}
+
+		// Unmirroring and setting image
+		for (int x = 1; x < m_img.width() - 1; x++) {
+			for (int y = 1; y < m_img.height() - 1; y++) {
+				int newVal = qBound(0, (int)pixelValues[x][y], 255);
+				currentImg.setPixel(x-1, y-1, qRgb(newVal, newVal, newVal));
+			}
+		}
+
+		float currentMean = computeImageMeanIntesity(pixelValues, img.width(), img.height());
+		qDebug() << "Intensity Mean:" << currentMean;
+
+		images.append(currentImg);
+	}
+
+	return images;
 }
 
 double ImageProcessing::computeImageMeanIntesity(QImage img)

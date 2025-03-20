@@ -21,6 +21,7 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cmath>
 
 //shortcut 
 typedef unsigned char uchar;
@@ -48,13 +49,14 @@ public:
 	QImage pixelsMirror(QImage img, int padding);
 	QImage pixelsUnmirror(QImage img, int padding);
 	QImage Convolution(QImage img, int padding);
+	void EdgeDetector(QImage img);
 
 	// Heat Equation 
 
 	QVector<QImage> schemeExplicit(QImage img, int stepCount, double timeStep);
 	QVector<QImage> schemeExplicitFloat(QImage img, int stepCount, double timeStep);
 
-	QVector<QImage> schemeImplicit(QImage img, int stepCount, double timeStep);
+	QVector<QImage> schemeImplicitFloat(QImage img, int stepCount, double timeStep);
 	double computeImageMeanIntesity(QImage img);
 	float computeImageMeanIntesity(QVector<QVector<float>> pixelsValues, int width, int height);
 
