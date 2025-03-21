@@ -12,8 +12,8 @@ ImageViewer::ImageViewer(QWidget* parent)
 	ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-	ui->stepCountspinBox->setValue(10);
-	ui->timeStepdoubleSpinBox->setValue(0.2);
+	ui->stepCountspinBox->setValue(5);
+	ui->timeStepdoubleSpinBox->setValue(0.01);
 	ui->IDiterationsspinBox->setEnabled(false);
 	ui->IDiterationsspinBox->setMinimum(0);
 	// connects changes from user to trigger updateImageFromSpinBoxExplicitLH() 
@@ -198,17 +198,23 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 	stepCount = ui->stepCountspinBox->value();  
 	timeStep = ui->timeStepdoubleSpinBox->value();
 	images_ES.clear();
-
+	images_IS.clear();
 	// qDebug() << "Step Count:" << stepCount;
 	// qDebug() << "Time Step:" << timeStep;
 
 	ImageProcessing IPmodul;
-	if (timeStep > 0.2) {
+	if (timeStep < 0.2) {
+		images_IS.append(img_original);
 		QVector<QImage> new_imgs = IPmodul.schemeImplicitFloat(*vW->getImage(), stepCount, timeStep);
-		if (!new_imgs.isEmpty()) { 
+		images_IS.append(new_imgs);
+		if (!images_IS.isEmpty()) {
 			qDebug() << "Showing last solution of T =" << stepCount;
-			vW->setImage(new_imgs.last());
-			vW->update();
+			int maxIter = images_IS.length() - 1;
+			ui->IDiterationsspinBox->setEnabled(true);
+			ui->IDiterationsspinBox->setMaximum(maxIter);
+			ui->IDiterationsspinBox->setValue(maxIter);
+
+			updateImageFromSpinBoxExplicitLH(maxIter);
 		}
 	}
 	else {
@@ -236,8 +242,10 @@ void ImageViewer::on_actionEdge_Detector_triggered()
 	ImageProcessing IPmodul;
 	QImage new_img;
 	IPmodul.EdgeDetector(*vW->getImage());
-	//QMessage
+
+	QMessageBox::information(NULL, "Message", "Edge Detector Done!\nExported to PGM file");
 }
+
 void ImageViewer::updateImageFromSpinBoxExplicitLH(int index)
 {
 	if (index >= 0 && index < images_ES.size()) {

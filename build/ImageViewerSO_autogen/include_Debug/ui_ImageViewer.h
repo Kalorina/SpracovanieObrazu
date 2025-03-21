@@ -194,7 +194,6 @@ public:
         menuImage->addAction(actionEH);
         menuImage->addAction(actionConvolution);
         menuImage->addAction(actionLinearHeatEq_Scheme);
-        menuImage->addSeparator();
         menuImage->addAction(actionEdge_Detector);
 
         retranslateUi(ImageViewerClass);

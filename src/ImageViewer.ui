@@ -121,7 +121,6 @@
     <addaction name="actionEH"/>
     <addaction name="actionConvolution"/>
     <addaction name="actionLinearHeatEq_Scheme"/>
-    <addaction name="separator"/>
     <addaction name="actionEdge_Detector"/>
    </widget>
    <addaction name="menuFile"/>

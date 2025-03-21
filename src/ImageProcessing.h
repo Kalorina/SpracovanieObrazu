@@ -47,11 +47,14 @@ public:
 	//uchar* pixelsUnmirror(int padding);
 
 	QVector<QVector<float>> convertTo2Dvector(QImage img);
+	QVector<QVector<float>> convertTo2DvectorNorm(QImage img);
 	QImage convertToQImage(QVector<QVector<float>> pixelValues, int width, int height);
 	QImage convertToQImageMirrored(QVector<QVector<float>> pixelValues, int width, int height, int padding);
-	
+
 	QImage pixelsMirror(QImage img, int padding);
 	QImage pixelsUnmirror(QImage img, int padding);
+	void printImgData(QVector<QVector<float>> imgData, int min, int max);
+	void printImgData(QVector<QVector<float>> imgData);
 	
 	//Convolution
 	QImage Convolution(QImage img, int padding);
@@ -59,8 +62,10 @@ public:
 	// Edge Detector
 	void EdgeDetector(QImage img);
 
+
 	// Heat Equation 
 	QVector<QImage> schemeExplicitFloat(QImage img, int stepCount, double timeStep);
+	QVector<QVector<float>> schemeExplicitFloat(QVector<QVector<float>> imgData, int stepCount, double timeStep);
 
 	QVector<QImage> schemeImplicitFloat(QImage img, int stepCount, double timeStep);
 	
@@ -74,7 +79,8 @@ public:
 
 	// #################### Export ###################
 
-	bool exportToPGM(QImage img, const QString& filename);
+	void exportQImageToPGM(QImage img, QString filename);
+	void exportToPGM(QVector<QVector<float>> imageData, QString filename);
 
 private: 
 	// #################### Variables ###################
@@ -92,5 +98,17 @@ private:
 		{0.001813519368126,   0.042330847554975,   0.117439994473243,   0.042330847554975,   0.001813519368126},
 		{0.000077693991227,   0.001813519368126,   0.005031312077870,   0.001813519368126,   0.000077693991227}
 	};
-
+	// Sobel kernels
+	QVector<QVector<int>> Gx = { {-1, 0, 1},
+								 {-2, 0, 2},
+								 {-1, 0, 1} };
+	QVector<QVector<int>> Gy = { {-1, -2, -1},
+								 {0, 0, 0},
+								 {1, 2, 1} };
+	QVector<QVector<int>> Gd1 = { {0, 1, 2},
+								  {-1, 0, 1},
+								  {-2, -1, 0} }; // Diagonal 45°
+	QVector<QVector<int>> Gd2 = { {2, 1, 0},
+								  {1, 0, -1},
+								  {0, -1, -2} }; // Diagonal 135°
 };
