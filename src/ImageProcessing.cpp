@@ -9,6 +9,51 @@ ImageProcessing::~ImageProcessing() {
 	delete[] m_pImgLocalData;
 }
 
+QVector<QVector<float>> ImageProcessing::convertTo2Dvector(QImage img)
+{
+	QVector<QVector<float>> pixelValues(img.width(), QVector<float>(img.height(), 0.0));
+
+	// original image values
+	for (int x = 0; x < img.width(); x++) {
+		for (int y = 0; y < img.height(); y++) {
+			pixelValues[x][y] = qGray(img.pixel(x, y));
+		}
+	}
+
+	pixelValues_org = pixelValues;
+	return pixelValues;
+}
+
+QImage ImageProcessing::convertToQImage(QVector<QVector<float>> pixelValues, int width, int height)
+{
+	QImage Img(width,height, QImage::Format_Grayscale8);
+
+	// the pixel values back to an image
+	for (int x = 0; x < width; x++) {
+		for (int y = 0; y <height; y++) {
+			// qBound(min, value, max) -> value in <min, max>
+			int newVal = qBound(0, (int)pixelValues[x][y], 255);
+			Img.setPixel(x, y, qRgb(newVal, newVal, newVal));
+		}
+	}
+	return Img;
+}
+
+QImage ImageProcessing::convertToQImageMirrored(QVector<QVector<float>> pixelValues, int width, int height, int padding)
+{
+	// Umirrored Dimentions for QImage
+	QImage Img(width - 2 * padding, height - 2 * padding, QImage::Format_Grayscale8);
+
+	for (int x = padding; x < width - padding; x++) {
+		for (int y = padding; y < height - padding; y++) {
+			// qBound(min, value, max) -> value in <min, max>
+			int newVal = qBound(0, (int)pixelValues[x][y], 255);
+			Img.setPixel(x - padding, y - padding, qRgb(newVal, newVal, newVal));
+		}
+	}
+	return Img;
+}
+
 QImage ImageProcessing::pixelsMirror(QImage img, int padding)
 {
 	if (img.format() != QImage::Format_Grayscale8) {return QImage();}
@@ -124,24 +169,17 @@ QImage ImageProcessing::pixelsUnmirror(QImage img, int padding)
 
 QImage ImageProcessing::Convolution(QImage img, int padding)
 {
-	QImage mirroredImg = img.copy();
+	QImage m_img = pixelsMirror(img.copy(), padding);
 
-	// Mirroring 
-	mirroredImg = pixelsMirror(mirroredImg, padding);
+	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img);
+	QVector<QVector<float>> outputImgData(img.width(), QVector<float>(img.height(), 0.0f));
 
 	// Convolution
-	
-	int mirroredWidth = mirroredImg.width();
-	int mirroredHeight = mirroredImg.height();
-
-	// output image with original size
-	QImage outputImg(img.size(), QImage::Format_Grayscale8);
-
 	int maskRadius = convolution_mask.size() / 2;
 
-	for (int y = 0; y < img.height(); ++y) { 
+	for (int y = 0; y < img.height(); ++y) {
 		for (int x = 0; x < img.width(); ++x) {
-			int newValue = 0;
+			float newValue = 0.0f;
 
 			for (int ky = -maskRadius; ky <= maskRadius; ++ky) {
 				for (int kx = -maskRadius; kx <= maskRadius; ++kx) {
@@ -149,64 +187,24 @@ QImage ImageProcessing::Convolution(QImage img, int padding)
 					int pixelX = x + kx + padding;
 					int pixelY = y + ky + padding;
 
-					int grayValue = qGray(mirroredImg.pixel(pixelX, pixelY));
-
-					newValue += grayValue * convolution_mask[ky + maskRadius][kx + maskRadius];
+					// Ensure safe access within bounds
+					if (pixelX >= 0 && pixelX < m_img.width() && pixelY >= 0 && pixelY < m_img.height()) {
+						newValue += pixelValues[pixelX][pixelY] * convolution_mask[ky + maskRadius][kx + maskRadius];
+					}
 				}
 			}
-
-			// qBound(min, value, max) -> ensures range <max,min>
-			newValue = qBound(0, newValue, 255);
-
-			outputImg.setPixelColor(x, y, QColor(newValue, newValue, newValue));
+			outputImgData[x][y] = qBound(0.0f, newValue, 255.0f);
 		}
 	}
-	exportToPGM(outputImg, "Unmirrored_test.pgm");
-	return outputImg;
+
+	QImage returnImg = convertToQImage(outputImgData, img.width(), img.height());
+	exportToPGM(returnImg, "Unmirrored_test.pgm");
+	return returnImg;
 }
 
 void ImageProcessing::EdgeDetector(QImage img)
 {
 
-}
-
-QVector<QImage> ImageProcessing::schemeExplicit(QImage img, int stepCount, double timeStep)
-{
-	qDebug() << "Linear Heat Eq Explicit scheme";
-
-	QVector<QImage> images;
-
-	// Convert to grayscale if img is RGB
-	QImage currentImg = img.convertToFormat(QImage::Format_Grayscale8);
-
-	for (int step = 0; step < stepCount; step++) {
-		QImage nextImg = pixelsMirror(currentImg, 1);
-
-		for (int y = 1; y < img.height() - 1; y++) {
-			for (int x = 1; x < img.width() - 1; x++) {
-				int u_p_n = qGray(currentImg.pixel(x, y));
-
-				int u_q1 = qGray(currentImg.pixel(x + 1, y)); // Right neighbor
-				int u_q2 = qGray(currentImg.pixel(x - 1, y)); // Left neighbor
-				int u_q3 = qGray(currentImg.pixel(x, y + 1)); // Bottom neighbor
-				int u_q4 = qGray(currentImg.pixel(x, y - 1)); // Top neighbor
-
-				// newVal = u_p_n+1
-				int newVal = (1 - 4 * timeStep) * u_p_n + timeStep * (u_q1 + u_q2 + u_q3 + u_q4);
-				// qBound(min, value, max) -> value in <min, max>
-				newVal = qBound(0, newVal, 255);
-
-				nextImg.setPixel(x, y, qRgb(newVal, newVal, newVal));
-			}
-		}
-
-		qDebug() << "Intensity Mean:" << computeImageMeanIntesity(nextImg);;
-
-		images.append(nextImg.copy(1, 1, img.width(), img.height()));
-		currentImg = nextImg;
-	}
-
-	return images;
 }
 
 QVector<QImage> ImageProcessing::schemeExplicitFloat(QImage img, int stepCount, double timeStep)
@@ -215,23 +213,24 @@ QVector<QImage> ImageProcessing::schemeExplicitFloat(QImage img, int stepCount, 
 
 	// Convert to grayscale if img is RGB
 	img = img.convertToFormat(QImage::Format_Grayscale8);
-
-	QImage m_img = pixelsMirror(img, 1);
+	int padding = 1;
+	QImage m_img = pixelsMirror(img, padding);
 
 	QVector<QImage> images;
-	QVector<QVector<float>> pixelValues(m_img.width(), QVector<float>(m_img.height(), 0.0));
+
+	/*QVector<QVector<float>> pixelValues(m_img.width(), QVector<float>(m_img.height(), 0.0));
 
 	// original image values
 	for (int x = 0; x < m_img.width(); x++) {
 		for (int y = 0; y < m_img.height(); y++) {
 			pixelValues[x][y] = qGray(m_img.pixel(x, y));
 		}
-	}
+	}*/
 
+	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img);
+	
 	for (int step = 0; step < stepCount; step++)
 	{
-		QImage currentImg(img.width(), img.height(), QImage::Format_Grayscale8);
-		// currentImg = width x height from img original -> without mirroring 
 		// pixels values 2D vecotr = width+2 x height+2 -> with mirroring padding:1
 		QVector<QVector<float>> newPixelValues = pixelValues;
 		double norm = 0.0;
@@ -270,17 +269,21 @@ QVector<QImage> ImageProcessing::schemeExplicitFloat(QImage img, int stepCount, 
 		pixelValues[0][m_img.height() - 1] = pixelValues[1][m_img.height() - 2];								// Bottom-left
 		pixelValues[m_img.width() - 1][m_img.height() - 1] = pixelValues[m_img.width() - 2][m_img.height() - 2];// Bottom-right
 
+		float currentMean = computeImageMeanIntesity(pixelValues, img.width(), img.height());
+		qDebug() << "Intensity Mean:" << currentMean;
+
+		// currentImg = width x height -> without mirroring
+		// QImage currentImg(img.width(), img.height(), QImage::Format_Grayscale8);
 		// the pixel values back to an image
-		for (int x = 1; x < m_img.width() - 1; x++) {
+		QImage currentImg = convertToQImageMirrored(pixelValues, m_img.width(), m_img.height(), padding);
+		
+		/*for (int x = 1; x < m_img.width() - 1; x++) {
 			for (int y = 1; y < m_img.height() - 1; y++) {
 				// qBound(min, value, max) -> value in <min, max>
 				int newVal = qBound(0, (int)pixelValues[x][y], 255);
 				currentImg.setPixel(x - 1, y - 1, qRgb(newVal, newVal, newVal)); 
 			}
-		}
-
-		float currentMean = computeImageMeanIntesity(pixelValues, img.width(), img.height());
-		qDebug() << "Intensity Mean:" << currentMean;
+		}*/
 
 		images.append(currentImg);
 	}

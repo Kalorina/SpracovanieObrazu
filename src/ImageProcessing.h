@@ -46,20 +46,28 @@ public:
 	//bool pixelsMirror(double* originalImgData, const int bytesPerLine, const int imgWidth, const int imgHeight, const int padding);
 	//uchar* pixelsUnmirror(int padding);
 
+	QVector<QVector<float>> convertTo2Dvector(QImage img);
+	QImage convertToQImage(QVector<QVector<float>> pixelValues, int width, int height);
+	QImage convertToQImageMirrored(QVector<QVector<float>> pixelValues, int width, int height, int padding);
+	
 	QImage pixelsMirror(QImage img, int padding);
 	QImage pixelsUnmirror(QImage img, int padding);
+	
+	//Convolution
 	QImage Convolution(QImage img, int padding);
+	
+	// Edge Detector
 	void EdgeDetector(QImage img);
 
 	// Heat Equation 
-
-	QVector<QImage> schemeExplicit(QImage img, int stepCount, double timeStep);
 	QVector<QImage> schemeExplicitFloat(QImage img, int stepCount, double timeStep);
 
 	QVector<QImage> schemeImplicitFloat(QImage img, int stepCount, double timeStep);
+	
 	double computeImageMeanIntesity(QImage img);
 	float computeImageMeanIntesity(QVector<QVector<float>> pixelsValues, int width, int height);
 
+	// Histogram
 	QVector<int> computeHistogram(QImage img);
 	QImage FSHS(QImage img); // Full Scale Histogram Strech
 	QImage EH(QImage img); // Equalization of Histogram 
@@ -75,6 +83,7 @@ private:
 	uint m_imgWidth = 0;
 	uint m_imgHeight = 0;
 
+	QVector<QVector<float>> pixelValues_org;
 	// Convolution mask
 	QVector<QVector<double>> convolution_mask = {
 		{0.000077693991227,   0.001813519368126,   0.005031312077870,   0.001813519368126,   0.000077693991227},
