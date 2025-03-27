@@ -68,6 +68,7 @@ public:
 	QVector<QVector<float>> schemeExplicitFloat(QVector<QVector<float>> imgData, int stepCount, double timeStep);
 
 	QVector<QImage> schemeImplicitFloat(QImage img, int stepCount, double timeStep);
+	QVector<QImage> schemeImplicit(QImage img, int stepCount, double timeStep);
 	
 	double computeImageMeanIntesity(QImage img);
 	float computeImageMeanIntesity(QVector<QVector<float>> pixelsValues, int width, int height);

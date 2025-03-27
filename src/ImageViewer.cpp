@@ -21,6 +21,10 @@ ImageViewer::ImageViewer(QWidget* parent)
 		QOverload<int>::of(&QSpinBox::valueChanged),
 		this, 
 		&ImageViewer::updateImageFromSpinBoxExplicitLH);
+	connect(ui->IDiterationsspinBox,
+		QOverload<int>::of(&QSpinBox::valueChanged),
+		this,
+		&ImageViewer::updateImageFromSpinBoxImplicitLH);
 
 	vW->setObjectName("ViewerWidget");
 }
@@ -203,9 +207,10 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 	// qDebug() << "Time Step:" << timeStep;
 
 	ImageProcessing IPmodul;
-	if (timeStep < 0.2) {
+	if (timeStep >= 0.3) {
 		images_IS.append(img_original);
-		QVector<QImage> new_imgs = IPmodul.schemeImplicitFloat(*vW->getImage(), stepCount, timeStep);
+		//QVector<QImage> new_imgs = IPmodul.schemeImplicitFloat(*vW->getImage(), stepCount, timeStep);
+		QVector<QImage> new_imgs = IPmodul.schemeImplicit(*vW->getImage(), stepCount, timeStep);
 		images_IS.append(new_imgs);
 		if (!images_IS.isEmpty()) {
 			qDebug() << "Showing last solution of T =" << stepCount;
@@ -214,7 +219,7 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 			ui->IDiterationsspinBox->setMaximum(maxIter);
 			ui->IDiterationsspinBox->setValue(maxIter);
 
-			updateImageFromSpinBoxExplicitLH(maxIter);
+			updateImageFromSpinBoxImplicitLH(maxIter);
 		}
 	}
 	else {
@@ -250,6 +255,14 @@ void ImageViewer::updateImageFromSpinBoxExplicitLH(int index)
 {
 	if (index >= 0 && index < images_ES.size()) {
 		vW->setImage(images_ES[index]);
+		vW->update();
+	}
+}
+
+void ImageViewer::updateImageFromSpinBoxImplicitLH(int index)
+{
+	if (index >= 0 && index < images_IS.size()) {
+		vW->setImage(images_IS[index]);
 		vW->update();
 	}
 }

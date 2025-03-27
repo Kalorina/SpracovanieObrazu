@@ -58,4 +58,5 @@ private slots:
 	void on_actionEdge_Detector_triggered();
 
 	void updateImageFromSpinBoxExplicitLH(int index);
+	void updateImageFromSpinBoxImplicitLH(int index);
 };

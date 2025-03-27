@@ -251,7 +251,7 @@ void ImageProcessing::EdgeDetector(QImage img)
 	QVector<QVector<float>> outputImgData(img.width(), QVector<float>(img.height(), 0.0f));
 
 	//float K = 1.0f; //matlab test img
-	//float K = 0.000000001f; //
+	float K = 0.000000001f; //
 
 	// Sobel filter
 	for (int x = 1; x < m_img.width() - 1; x++) {
@@ -294,13 +294,12 @@ QVector<QImage> ImageProcessing::schemeExplicitFloat(QImage img, int stepCount, 
 	QImage m_img = pixelsMirror(img, padding);
 
 	QVector<QImage> images;
+	// pixels values 2D vecotr = width+2 x height+2 -> with mirroring padding:1
 	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img);
-	
+	QVector<QVector<float>> newPixelValues = pixelValues;
+
 	for (int step = 0; step < stepCount; step++)
 	{
-		// pixels values 2D vecotr = width+2 x height+2 -> with mirroring padding:1
-		QVector<QVector<float>> newPixelValues = pixelValues;
-
 		for (int x = 1; x < m_img.width() - 1; x++) {
 			for (int y = 1; y < m_img.height() - 1; y++) {
 				float u_p_n = pixelValues[x][y];
@@ -371,8 +370,7 @@ QVector<QVector<float>> ImageProcessing::schemeExplicitFloat(QVector<QVector<flo
 				float u_q3 = imgData[x][y + 1];
 				float u_q4 = imgData[x][y - 1];
 
-				newPixelValues[x][y] = (1 - 4 * timeStep) * u_p_n
-					+ timeStep * (u_q1 + u_q2 + u_q3 + u_q4);
+				newPixelValues[x][y] = (1 - 4 * timeStep) * u_p_n + timeStep * (u_q1 + u_q2 + u_q3 + u_q4);
 			}
 		}
 		// all new pixel values updated /w mirrored pixels 
@@ -405,13 +403,13 @@ QVector<QVector<float>> ImageProcessing::schemeExplicitFloat(QVector<QVector<flo
 QVector<QImage> ImageProcessing::schemeImplicitFloat(QImage img, int stepCount, double timeStep)
 {
 	double omega = 1.25;
-	int maxIter = 25;
+	int maxIter = 50;
 	double tolerance = 1.0E-6;
 
 	qDebug() << "Linear Heat Eq Implicit scheme SOR method MaxIter" << maxIter << " omega:" <<  omega << "tolerance:" << tolerance;
 
 	// Convert to grayscale if img is RGB
-	// img = img.convertToFormat(QImage::Format_Grayscale8);
+	img = img.convertToFormat(QImage::Format_Grayscale8);
 	QImage m_img = pixelsMirror(img, 1);
 
 	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img);
@@ -421,51 +419,50 @@ QVector<QImage> ImageProcessing::schemeImplicitFloat(QImage img, int stepCount, 
 	float Aii = 1.0 + 4 * timeStep; // = 1 + 4*tau
 	float Aij = -timeStep; // = -tau
 	
-	QVector<float> b(m_img.height(), 0.0);	// RHS vector (b) 
-	for (int x = 0; x < img.width(); x++) {
-		for (int y = 0; y < img.height(); y++) {
-			float temp = pixelValues[x + 1][y + 1];
-			b[y] = temp;
-		}
-	}
-
 	//Time Step LOOP
 	for (int step = 0; step < stepCount; step++) {
 
 		newPixelValues = pixelValues;
+		float sigma = 0.0;
 
 		// SOR LOOP
 		for (int iter = 0; iter < maxIter; iter++) {
 			double norm = 0.0;
 			
+			QVector<float> b(m_img.height(), 0.0);	// RHS vector (b) 
+			for (int x = 0; x < img.width(); x++) {
+				for (int y =0; y < img.height(); y++) {
+					b[y] = pixelValues[x + 1][y + 1];;
+				}
+			}
+
 			for (int x = 1; x < m_img.width() - 1; x++) {
 				for (int y = 1; y < m_img.height() - 1; y++) {
 
 					float oldVal = newPixelValues[x][y];
 
-					// RHS = u^n (original value from current time step)
-					float b = pixelValues[x][y];
-
-					// Sum of neighbor values (using latest available values)
+					/*// Sum of neighbor values
 					float neighborSum =
 						newPixelValues[x - 1][y] +   // left (already updated)
 						pixelValues[x + 1][y] +      // right (not yet updated)
 						newPixelValues[x][y - 1] +   // top (already updated)
 						pixelValues[x][y + 1];       // bottom (not yet updated)
+					*/
 
-					// SOR update formula
-					float newVal = (1.0 - omega) * oldVal +
-						(omega / Aii) * (b + Aij * neighborSum);
+					// SOR formula
+					//float newVal = (1.0 - omega) * oldVal + (omega / Aii) * (b + Aij * neighborSum);
 
+					sigma = oldVal * Aij;
+					float newVal = oldVal + omega * (((b[y] - sigma) / Aii) - oldVal);
 					newPixelValues[x][y] = newVal;
 
-					// Calculate residual (for convergence check)
-					norm += (newVal - oldVal) * (newVal - oldVal);
+					// residual (for convergence check)
+					norm += (newVal - b[y]) * (newVal - b[y]);
 				}
 			}
 			// Check for convergence
-			norm = std::sqrt(norm);
-			if (norm < tolerance) {
+			float normtotal = std::sqrt(norm);
+			if (normtotal < tolerance) {
 				qDebug() << "SOR Converged at iteration:" << iter << "with norm:" << norm;
 				break;
 			}
@@ -498,6 +495,119 @@ QVector<QImage> ImageProcessing::schemeImplicitFloat(QImage img, int stepCount, 
 		currentImg = convertToQImageMirrored(pixelValues, m_img.width(), m_img.height(), 1);
 		images.append(currentImg);
 	}
+	return images;
+}
+
+QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, double timeStep)
+{
+	qDebug() << "Implicit scheme for heat equation.";
+
+	QVector<QImage> images;
+
+	if (img.isNull() || stepCount <= 0 || timeStep <= 0) {
+		qDebug() << "Invalid input.";
+		return images;
+	}
+
+	int width = img.width();
+	int height = img.height();
+	int padding = 1;
+
+	// phi -> new pixelValues
+	//double* phi = new double[(width + 2 * padding) * (height + 2 * padding)] {0.0};
+	//double* b = new double[width * height] {0.0};
+
+	QImage m_img = pixelsMirror(img.convertToFormat(QImage::Format_Grayscale8), padding);
+	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img);
+	QVector<QVector<float>> newPixelValues(m_img.width(), QVector<float>(m_img.height(), 0.0));
+	QVector<float> b(m_img.height(), 0.0);	// RHS vector (b) 
+
+	// Initialize b with original values
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			newPixelValues[x][y] = pixelValues[x][y];
+			b[y] = pixelValues[x][y];
+		}
+	}
+
+	// SOR parameters
+	// A * phi = b
+	// Aii = 1 + 4 * timeStep
+	// Aij = -timeStep
+	double omega = 1.25;
+	const int MAX_ITER = 1000;
+	const double TOL = 1.0E-3;
+	double Aii = 1.0 + 4 * timeStep;
+	double Aij = -timeStep;
+
+	qDebug() << "Linear Heat Eq Implicit scheme SOR method MaxIter" << MAX_ITER << " omega:" << omega << "tolerance:" << TOL;
+
+	for (int t = 0; t < stepCount; t++)
+	{
+		double rezid = 0.0;
+		int iter = 0;
+
+		do
+		{
+			iter++;
+			rezid = 0.0;
+
+			for (int x = padding; x < width + padding; x++)
+			{
+				for (int y = padding; y < height + padding; y++)
+				{
+					float neighborSum =
+						pixelValues[x - 1][y] +   // left (West)
+						pixelValues[x + 1][y] +   // right (East)
+						pixelValues[x][y - 1] +   // top (North)
+						pixelValues[x][y + 1];    // bottom (South)
+
+					// Sum of neighbors
+					double sigmaSOR = Aij * neighborSum;
+
+					float newVal = (1.0 - omega) * pixelValues[x][y] + (omega / Aii) * (b[y] - sigmaSOR);
+
+					rezid += (newVal - pixelValues[x][y]) * (newVal - pixelValues[x][y]);
+					newPixelValues[x][y] = newVal;
+				}
+			}
+
+			// Stopping condition - convergence
+			rezid = sqrt(rezid);
+			//qDebug() << "rezid:" << rezid;
+			if (rezid < TOL)
+				qDebug() << "break; rezid:" << rezid;
+				break;
+
+		} while (iter < MAX_ITER);
+
+		pixelValues = newPixelValues;
+		// mirroring: boundary conditions -> zero flux
+		// edges
+		for (int x = 1; x < m_img.width() - 1; x++) {
+			pixelValues[x][0] = pixelValues[x][1];									// Top boundary
+			pixelValues[x][m_img.height() - 1] = pixelValues[x][m_img.height() - 2];// Bottom boundary
+		}
+		for (int y = 1; y < m_img.height() - 1; y++) {
+			pixelValues[0][y] = pixelValues[1][y];									// Left boundary
+			pixelValues[m_img.width() - 1][y] = pixelValues[m_img.width() - 2][y];	// Right boundary
+		}
+		// corners 
+		pixelValues[0][0] = pixelValues[1][1];																	// Top-left
+		pixelValues[m_img.width() - 1][0] = pixelValues[m_img.width() - 2][1];									// Top-right
+		pixelValues[0][m_img.height() - 1] = pixelValues[1][m_img.height() - 2];								// Bottom-left
+		pixelValues[m_img.width() - 1][m_img.height() - 1] = pixelValues[m_img.width() - 2][m_img.height() - 2];// Bottom-right
+
+		// Intensity Mean
+		float img_mean = computeImageMeanIntesity(pixelValues, m_img.width(), m_img.height());
+		qDebug() << "Intensity Mean:" << img_mean;
+
+		// Convert updated new pixel values back to QImage
+		QImage currentImg(img.width(), img.height(), QImage::Format_Grayscale8);
+		currentImg = convertToQImageMirrored(pixelValues, m_img.width(), m_img.height(), 1);
+		images.append(currentImg);
+	}
+
 	return images;
 }
 
