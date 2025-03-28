@@ -70,6 +70,9 @@ public:
 	QVector<QImage> schemeImplicit(QImage img, int stepCount, double timeStep);
 	QVector<QVector<float>> schemeImplicitFloat(QVector<QVector<float>> imgData, int stepCount, double timeStep);
 	
+	// Linear Diffusion
+	QVector<QImage> schemeSemi_Implicit(QImage img, int stepCount, double timeStep, double omega, double K);
+
 	double computeImageMeanIntesity(QImage img);
 	float computeImageMeanIntesity(QVector<QVector<float>> pixelsValues, int width, int height);
 

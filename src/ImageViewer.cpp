@@ -12,19 +12,29 @@ ImageViewer::ImageViewer(QWidget* parent)
 	ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-	ui->stepCountspinBox->setValue(5);
-	ui->timeStepdoubleSpinBox->setValue(0.01);
+	ui->stepCountspinBox->setValue(stepCount);
+	ui->timeStepdoubleSpinBox->setValue(timeStep);
+	ui->doubleSpinBoxOmega->setValue(omega);
+	ui->doubleSpinBoxK->setValue(K);
 	ui->IDiterationsspinBox->setEnabled(false);
 	ui->IDiterationsspinBox->setMinimum(0);
-	// connects changes from user to trigger updateImageFromSpinBoxExplicitLH() 
+	// connects changes from user to update ES images
 	connect(ui->IDiterationsspinBox, 
 		QOverload<int>::of(&QSpinBox::valueChanged),
 		this, 
 		&ImageViewer::updateImageFromSpinBoxExplicitLH);
+
+	// connects changes from user to update IS images
 	connect(ui->IDiterationsspinBox,
 		QOverload<int>::of(&QSpinBox::valueChanged),
 		this,
 		&ImageViewer::updateImageFromSpinBoxImplicitLH);
+
+	// connects changes from user to update SIS images
+	connect(ui->IDiterationsspinBox,
+		QOverload<int>::of(&QSpinBox::valueChanged),
+		this,
+		&ImageViewer::updateImageFromSpinBoxSemiImplicitDiffusion);
 
 	vW->setObjectName("ViewerWidget");
 }
@@ -250,6 +260,30 @@ void ImageViewer::on_actionEdge_Detector_triggered()
 	vW->setImage(new_img);
 	vW->update();
 }
+void ImageViewer::on_actionSemi_Implicit_Scheme_Diffusion_triggered()
+{
+	if (vW->isEmpty()) false;
+
+	stepCount = ui->stepCountspinBox->value();
+	timeStep = ui->timeStepdoubleSpinBox->value();
+	omega = ui->doubleSpinBoxOmega->value();
+	K = ui->doubleSpinBoxK->value();
+	images_SIS.clear();
+
+	ImageProcessing IPmodul;
+	images_SIS.append(img_original);
+	QVector<QImage> new_imgs = IPmodul.schemeSemi_Implicit(*vW->getImage(), stepCount, timeStep, omega, K);
+	images_SIS.append(new_imgs);
+	if (!images_SIS.isEmpty()) {
+		qDebug() << "Showing last solution of T =" << stepCount;
+		int maxIter = images_SIS.length() - 1;
+		ui->IDiterationsspinBox->setEnabled(true);
+		ui->IDiterationsspinBox->setMaximum(maxIter);
+		ui->IDiterationsspinBox->setValue(maxIter);
+
+		updateImageFromSpinBoxSemiImplicitDiffusion(maxIter);
+	}
+}
 
 // SpinBox for Image Vector Index
 void ImageViewer::updateImageFromSpinBoxExplicitLH(int index)
@@ -263,6 +297,13 @@ void ImageViewer::updateImageFromSpinBoxImplicitLH(int index)
 {
 	if (index >= 0 && index < images_IS.size()) {
 		vW->setImage(images_IS[index]);
+		vW->update();
+	}
+}
+void ImageViewer::updateImageFromSpinBoxSemiImplicitDiffusion(int index)
+{
+	if (index >= 0 && index < images_SIS.size()) {
+		vW->setImage(images_SIS[index]);
 		vW->update();
 	}
 }

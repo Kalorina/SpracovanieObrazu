@@ -27,12 +27,15 @@ private:
 	//QSpinBox* stepCountInput = new QSpinBox(this);
 	//QDoubleSpinBox* timeStepInput = new QDoubleSpinBox(this);
 
-	// Explicit scheme
-	double timeStep = 0.2;
+	// Variables Exlicit, Implicit, Semi-Implicit
+	double timeStep = 0.5;
 	int stepCount = 10;
+	double omega = 0.5;
+	double K = 2.5;
 
 	QVector<QImage> images_ES; // linear heat eq -> explicit scheme
 	QVector<QImage> images_IS; // linear heat eq -> implicit scheme
+	QVector<QImage> images_SIS; // linear Diffusion -> semi-implicit scheme
 
 	//ImageViewer Events
 	void closeEvent(QCloseEvent* event);
@@ -54,9 +57,11 @@ private slots:
 	void on_actionFSHS_triggered(); // Full Scale Histogram Strech
 	void on_actionEH_triggered(); // Equalization of Histogram 
 	void on_actionConvolution_triggered(); // Convolution + Un/Mirroring
-	void on_actionLinearHeatEq_Scheme_triggered();
-	void on_actionEdge_Detector_triggered();
+	void on_actionLinearHeatEq_Scheme_triggered(); // Explicit timeStep (tau) <0.3 else Implicit scheme
+	void on_actionEdge_Detector_triggered(); //Edge Detecotor
+	void on_actionSemi_Implicit_Scheme_Diffusion_triggered(); // Semi implicit Scheme Linear Diffusion
 
 	void updateImageFromSpinBoxExplicitLH(int index);
 	void updateImageFromSpinBoxImplicitLH(int index);
+	void updateImageFromSpinBoxSemiImplicitDiffusion(int index);
 };

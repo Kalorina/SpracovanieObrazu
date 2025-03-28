@@ -659,6 +659,17 @@ QVector<QVector<float>> ImageProcessing::schemeImplicitFloat(QVector<QVector<flo
 	return imgData;
 }
 
+QVector<QImage> ImageProcessing::schemeSemi_Implicit(QImage img, int stepCount, double timeStep, double omega, double K)
+{
+	qDebug() << "Semi-Implicit Diffusion Perona-Malikova method";
+
+	QVector<QImage> images;
+	images.append(img);
+
+	qDebug() << "Semi-Implicit Diffusion Done";
+	return images;
+}
+
 double ImageProcessing::computeImageMeanIntesity(QImage img)
 {
 	if (img.isNull()) return 0.0;
