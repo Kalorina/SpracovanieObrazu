@@ -505,7 +505,6 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 	QVector<QImage> images;
 
 	if (img.isNull() || stepCount <= 0 || timeStep <= 0) {
-		qDebug() << "Invalid input.";
 		return images;
 	}
 
@@ -513,20 +512,14 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 	int height = img.height();
 	int padding = 1;
 
-	// phi -> new pixelValues
-	//double* phi = new double[(width + 2 * padding) * (height + 2 * padding)] {0.0};
-	//double* b = new double[width * height] {0.0};
-
 	QImage m_img = pixelsMirror(img.convertToFormat(QImage::Format_Grayscale8), padding);
 	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img);
-	QVector<QVector<float>> newPixelValues(m_img.width(), QVector<float>(m_img.height(), 0.0));
-	QVector<float> b(m_img.height(), 0.0);	// RHS vector (b) 
+	QVector<float> b(width * height, 0.0);	// RHS vector (b) 
 
 	// Initialize b with original values
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
-			newPixelValues[x][y] = pixelValues[x][y];
-			b[y] = pixelValues[x][y];
+			b[y * width + x] = pixelValues[x + padding][y + padding];
 		}
 	}
 
@@ -536,7 +529,7 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 	// Aij = -timeStep
 	double omega = 1.25;
 	const int MAX_ITER = 1000;
-	const double TOL = 1.0E-3;
+	const double TOL = 1.0E-6;
 	double Aii = 1.0 + 4 * timeStep;
 	double Aij = -timeStep;
 
@@ -564,24 +557,24 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 
 					// Sum of neighbors
 					double sigmaSOR = Aij * neighborSum;
+					float originalVal = pixelValues[x][y];
+					float newVal = (1.0 - omega) * originalVal + (omega / Aii) * (b[(y - padding) * width + (x - padding)] - sigmaSOR);
 
-					float newVal = (1.0 - omega) * pixelValues[x][y] + (omega / Aii) * (b[y] - sigmaSOR);
-
-					rezid += (newVal - pixelValues[x][y]) * (newVal - pixelValues[x][y]);
-					newPixelValues[x][y] = newVal;
+					rezid += (newVal - originalVal) * (newVal - originalVal);
+					pixelValues[x][y] = newVal;
 				}
 			}
 
 			// Stopping condition - convergence
-			rezid = sqrt(rezid);
+			rezid = sqrt(rezid / (width * height));
 			//qDebug() << "rezid:" << rezid;
-			if (rezid < TOL)
-				qDebug() << "break; rezid:" << rezid;
+			if (rezid < TOL) {
+				//qDebug() << "break; rezid:" << rezid;
 				break;
-
+			}
+				
 		} while (iter < MAX_ITER);
 
-		pixelValues = newPixelValues;
 		// mirroring: boundary conditions -> zero flux
 		// edges
 		for (int x = 1; x < m_img.width() - 1; x++) {
@@ -603,8 +596,7 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 		qDebug() << "Intensity Mean:" << img_mean;
 
 		// Convert updated new pixel values back to QImage
-		QImage currentImg(img.width(), img.height(), QImage::Format_Grayscale8);
-		currentImg = convertToQImageMirrored(pixelValues, m_img.width(), m_img.height(), 1);
+		QImage currentImg = convertToQImageMirrored(pixelValues, m_img.width(), m_img.height(), 1);
 		images.append(currentImg);
 	}
 
