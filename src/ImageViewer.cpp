@@ -233,7 +233,7 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 	}
 	else {
 		images_ES.append(img_original);
-		QVector<QImage> new_imgs = IPmodul.schemeExplicitFloat(*vW->getImage(), stepCount, timeStep);
+		QVector<QImage> new_imgs = IPmodul.schemeExplicit(*vW->getImage(), stepCount, timeStep);
 		images_ES.append(new_imgs);
 		if (!images_ES.isEmpty()) {
 			qDebug() << "Showing last solution of T =" << stepCount;
@@ -307,4 +307,3 @@ void ImageViewer::updateImageFromSpinBoxSemiImplicitDiffusion(int index)
 		vW->update();
 	}
 }
-
