@@ -203,6 +203,7 @@ void ImageProcessing::printImgData(QVector<QVector<float>> imgData)
 
 QImage ImageProcessing::Convolution(QImage img, int padding)
 {
+	qDebug() << "Convolution started";
 	QImage m_img = pixelsMirror(img.copy(), padding);
 
 	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img);
@@ -232,26 +233,28 @@ QImage ImageProcessing::Convolution(QImage img, int padding)
 	}
 
 	return convertToQImage(outputImgData, img.width(), img.height());
+	qDebug() << "Convolution done";
 }
 
 void ImageProcessing::EdgeDetector(QImage img)
 {
-	qDebug() << "Edge Detector -> Gradient of pixels ( filtered data ES-LHEq)";
+	qDebug() << "Edge Detector -> Gradient of pixels ( filtered data IS-LHEq)";
 	// Convert to grayscale if img is RGB
 	img = img.convertToFormat(QImage::Format_Grayscale8);
 	int padding = 1;
 	QImage m_img = pixelsMirror(img, padding);
-	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img);
-	// QVector<QVector<float>> pixelValues = convertTo2DvectorNorm(m_img);
+	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img); // RGB <0,255>
+	// QVector<QVector<float>> pixelValues = convertTo2DvectorNorm(m_img); // Normalized <0,1>
 	//printImgData(pixelValues, m_img.width() / 2 - 10, m_img.width() / 2 );
 
-	pixelValues = schemeExplicitFloat(pixelValues, 10, 0.2);
+	//pixelValues = schemeExplicitFloat(pixelValues, 1, 0.2);
+	pixelValues = schemeImplicitFloat(pixelValues, 1, 0.5);
 	//printImgData(pixelValues, m_img.width() / 2 - 10, m_img.width() / 2 );
 
 	QVector<QVector<float>> outputImgData(img.width(), QVector<float>(img.height(), 0.0f));
 
-	//float K = 1.0f; //matlab test img
-	float K = 0.000000001f; //
+	//float K = 1.0f; //Norm <0,10000>
+	float K = 2.5f; //RGB <0,5>
 
 	// Sobel filter
 	for (int x = 1; x < m_img.width() - 1; x++) {
@@ -276,13 +279,71 @@ void ImageProcessing::EdgeDetector(QImage img)
 			// Compute mean gradient 
 			float magnitude = (magE + magS + magD1 + magD2) / 4;
 			// normalized magnitude <0,1>
-			double g_value = 1.0 / (1.0 + K * std::pow(magnitude, 2));
-			outputImgData[x - 1][y - 1] = qBound(0.0f, (float)g_value, 255.0f);
+			//double g_value = 1.0 / (1.0 + K * std::pow(magnitude, 2));
+			outputImgData[x - 1][y - 1] = qBound(0.0f, (float)magnitude, 255.0f);
 		}
 	}
 	//printImgData(outputImgData, m_img.width() / 2 - 10, m_img.width() / 2);
 	//printImgData(outputImgData);
-	exportQImageToPGM(convertToQImage(outputImgData,img.width(),img.height()), "edgeDetector_gradient.pgm");
+	qDebug() << "Edge Detector Done";
+	//exportQImageToPGM(convertToQImage(outputImgData,img.width(),img.height()), "edgeDetector_gradient_fromImg.pgm");
+	exportToPGM(outputImgData, "edgeDetector_gradient_fromData.pgm");
+}
+
+QImage ImageProcessing::EdgeDetectorImg(QImage img)
+{
+	qDebug() << "Edge Detector -> Gradient of pixels ( filtered data IS-LHEq)";
+	// Convert to grayscale if img is RGB
+	img = img.convertToFormat(QImage::Format_Grayscale8);
+	int padding = 1;
+	QImage m_img = pixelsMirror(img, padding);
+	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img); // RGB <0,255>
+	// QVector<QVector<float>> pixelValues = convertTo2DvectorNorm(m_img); // Normalized <0,1>
+	//printImgData(pixelValues, m_img.width() / 2 - 10, m_img.width() / 2 );
+
+	//pixelValues = schemeExplicitFloat(pixelValues, 1, 0.2);
+	pixelValues = schemeImplicitFloat(pixelValues, 1, 0.5);
+	//printImgData(pixelValues, m_img.width() / 2 - 10, m_img.width() / 2 );
+
+	QVector<QVector<float>> outputImgData(img.width(), QVector<float>(img.height(), 0.0f));
+
+	//float K = 1.0f; //Norm <0,10000>
+	float K = 2.5f; //RGB <0,5>
+
+	// Sobel filter
+	for (int x = 1; x < m_img.width() - 1; x++) {
+		for (int y = 1; y < m_img.height() - 1; y++) {
+			float gradE = 0, gradS = 0, gradD1 = 0, gradD2 = 0;
+
+			// convolution -> Sobel Kernel 4 directions 
+			for (int i = -1; i <= 1; i++) {
+				for (int j = -1; j <= 1; j++) {
+					double pixelVal = pixelValues[x + i][y + j];
+					gradE += Gx[i + 1][j + 1] * pixelVal;
+					gradS += Gy[i + 1][j + 1] * pixelVal;
+					gradD1 += Gd1[i + 1][j + 1] * pixelVal;
+					gradD2 += Gd2[i + 1][j + 1] * pixelVal;
+				}
+			}
+			float magE = std::abs(gradE);
+			float magS = std::abs(gradS);
+			float magD1 = std::abs(gradD1);
+			float magD2 = std::abs(gradD2);
+
+			// Compute mean gradient 
+			float magnitude = (magE + magS + magD1 + magD2) / 4;
+			// normalized magnitude <0,1>
+			//double g_value = 1.0 / (1.0 + K * std::pow(magnitude, 2));
+			outputImgData[x - 1][y - 1] = qBound(0.0f, (float)magnitude, 255.0f);
+		}
+	}
+	//printImgData(outputImgData, m_img.width() / 2 - 10, m_img.width() / 2);
+	//printImgData(outputImgData);
+	qDebug() << "Edge Detector Done";
+	//exportQImageToPGM(convertToQImage(outputImgData,img.width(),img.height()), "edgeDetector_gradient_fromImg.pgm");
+	QImage img_edgeD = convertToQImage(outputImgData,img.width(), img.height());
+	exportToPGM(outputImgData, "edgeDetector_gradient_fromData.pgm");
+	return img_edgeD;
 }
 
 QVector<QImage> ImageProcessing::schemeExplicitFloat(QImage img, int stepCount, double timeStep)
@@ -400,108 +461,8 @@ QVector<QVector<float>> ImageProcessing::schemeExplicitFloat(QVector<QVector<flo
 	return outputImgData;
 }
 
-QVector<QImage> ImageProcessing::schemeImplicitFloat(QImage img, int stepCount, double timeStep)
-{
-	double omega = 1.25;
-	int maxIter = 50;
-	double tolerance = 1.0E-6;
-
-	qDebug() << "Linear Heat Eq Implicit scheme SOR method MaxIter" << maxIter << " omega:" <<  omega << "tolerance:" << tolerance;
-
-	// Convert to grayscale if img is RGB
-	img = img.convertToFormat(QImage::Format_Grayscale8);
-	QImage m_img = pixelsMirror(img, 1);
-
-	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img);
-	QVector<QVector<float>> newPixelValues(m_img.width(), QVector<float>(m_img.height(), 0.0));
-	QVector<QImage> images;
-
-	float Aii = 1.0 + 4 * timeStep; // = 1 + 4*tau
-	float Aij = -timeStep; // = -tau
-	
-	//Time Step LOOP
-	for (int step = 0; step < stepCount; step++) {
-
-		newPixelValues = pixelValues;
-		float sigma = 0.0;
-
-		// SOR LOOP
-		for (int iter = 0; iter < maxIter; iter++) {
-			double norm = 0.0;
-			
-			QVector<float> b(m_img.height(), 0.0);	// RHS vector (b) 
-			for (int x = 0; x < img.width(); x++) {
-				for (int y =0; y < img.height(); y++) {
-					b[y] = pixelValues[x + 1][y + 1];;
-				}
-			}
-
-			for (int x = 1; x < m_img.width() - 1; x++) {
-				for (int y = 1; y < m_img.height() - 1; y++) {
-
-					float oldVal = newPixelValues[x][y];
-
-					/*// Sum of neighbor values
-					float neighborSum =
-						newPixelValues[x - 1][y] +   // left (already updated)
-						pixelValues[x + 1][y] +      // right (not yet updated)
-						newPixelValues[x][y - 1] +   // top (already updated)
-						pixelValues[x][y + 1];       // bottom (not yet updated)
-					*/
-
-					// SOR formula
-					//float newVal = (1.0 - omega) * oldVal + (omega / Aii) * (b + Aij * neighborSum);
-
-					sigma = oldVal * Aij;
-					float newVal = oldVal + omega * (((b[y] - sigma) / Aii) - oldVal);
-					newPixelValues[x][y] = newVal;
-
-					// residual (for convergence check)
-					norm += (newVal - b[y]) * (newVal - b[y]);
-				}
-			}
-			// Check for convergence
-			float normtotal = std::sqrt(norm);
-			if (normtotal < tolerance) {
-				qDebug() << "SOR Converged at iteration:" << iter << "with norm:" << norm;
-				break;
-			}
-		}
-
-		pixelValues = newPixelValues;
-
-		// mirroring: boundary conditions -> zero flux
-		// edges
-		for (int x = 1; x < m_img.width() - 1; x++) {
-			pixelValues[x][0] = pixelValues[x][1];									// Top boundary
-			pixelValues[x][m_img.height() - 1] = pixelValues[x][m_img.height() - 2];// Bottom boundary
-		}
-		for (int y = 1; y < m_img.height() - 1; y++) {
-			pixelValues[0][y] = pixelValues[1][y];									// Left boundary
-			pixelValues[m_img.width() - 1][y] = pixelValues[m_img.width() - 2][y];	// Right boundary
-		}
-		// corners 
-		pixelValues[0][0] = pixelValues[1][1];																	// Top-left
-		pixelValues[m_img.width() - 1][0] = pixelValues[m_img.width() - 2][1];									// Top-right
-		pixelValues[0][m_img.height() - 1] = pixelValues[1][m_img.height() - 2];								// Bottom-left
-		pixelValues[m_img.width() - 1][m_img.height() - 1] = pixelValues[m_img.width() - 2][m_img.height() - 2];// Bottom-right
-
-		// Intensity Mean
-		float img_mean = computeImageMeanIntesity(pixelValues, m_img.width(), m_img.height());
-		qDebug() << "Intensity Mean:" << img_mean;
-		
-		// padding = 1;
-		QImage currentImg(img.width(), img.height(), QImage::Format_Grayscale8);
-		currentImg = convertToQImageMirrored(pixelValues, m_img.width(), m_img.height(), 1);
-		images.append(currentImg);
-	}
-	return images;
-}
-
 QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, double timeStep)
 {
-	qDebug() << "Implicit scheme for heat equation.";
-
 	QVector<QImage> images;
 
 	if (img.isNull() || stepCount <= 0 || timeStep <= 0) {
@@ -601,6 +562,101 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 	}
 
 	return images;
+}
+
+QVector<QVector<float>> ImageProcessing::schemeImplicitFloat(QVector<QVector<float>> imgData, int stepCount, double timeStep)
+{
+	int padding = 1;
+
+	int width_mirrored = imgData.size();
+	if (width_mirrored == 0) return QVector<QVector<float>>();
+	int width_org = imgData.size() - 2 * padding;
+	int height_org = imgData[0].size() - 2 * padding;
+	int height_mirrored = imgData[0].size();
+
+	QVector<float> b(width_org * height_org, 0.0);	// RHS vector (b) 
+
+	// Initialize b with original values
+	for (int y = 0; y < height_org; y++) {
+		for (int x = 0; x < width_org; x++) {
+			b[y * width_org + x] = imgData[x + padding][y + padding];
+		}
+	}
+
+	// SOR parameters
+	// A * phi = b
+	// Aii = 1 + 4 * timeStep
+	// Aij = -timeStep
+	double omega = 1.25;
+	const int MAX_ITER = 1000;
+	const double TOL = 1.0E-6;
+	double Aii = 1.0 + 4 * timeStep;
+	double Aij = -timeStep;
+
+	qDebug() << "Linear Heat Eq Implicit scheme SOR method";
+
+	for (int t = 0; t < stepCount; t++)
+	{
+		double rezid = 0.0;
+		int iter = 0;
+
+		do
+		{
+			iter++;
+			rezid = 0.0;
+
+			for (int x = padding; x < width_org + padding; x++)
+			{
+				for (int y = padding; y < height_org + padding; y++)
+				{
+					float neighborSum =
+						imgData[x - 1][y] +   // left (West)
+						imgData[x + 1][y] +   // right (East)
+						imgData[x][y - 1] +   // top (North)
+						imgData[x][y + 1];    // bottom (South)
+
+					// Sum of neighbors
+					double sigmaSOR = Aij * neighborSum;
+					float originalVal = imgData[x][y];
+					float newVal = (1.0 - omega) * originalVal + (omega / Aii) * (b[(y - padding) * width_org + (x - padding)] - sigmaSOR);
+
+					rezid += (newVal - originalVal) * (newVal - originalVal);
+					imgData[x][y] = newVal;
+				}
+			}
+
+			// Stopping condition - convergence
+			rezid = sqrt(rezid / (width_org * height_org));
+			//qDebug() << "rezid:" << rezid;
+			if (rezid < TOL) {
+				//qDebug() << "break; rezid:" << rezid;
+				break;
+			}
+
+		} while (iter < MAX_ITER);
+
+		// mirroring: boundary conditions -> zero flux
+		// edges
+		for (int x = 1; x < width_mirrored - 1; x++) {
+			imgData[x][0] = imgData[x][1];										// Top boundary
+			imgData[x][height_mirrored - 1] = imgData[x][height_mirrored - 2];	// Bottom boundary
+		}
+		for (int y = 1; y < height_mirrored - 1; y++) {
+			imgData[0][y] = imgData[1][y];										// Left boundary
+			imgData[width_mirrored - 1][y] = imgData[width_mirrored - 2][y];	// Right boundary
+		}
+		// corners 
+		imgData[0][0] = imgData[1][1];																		// Top-left
+		imgData[width_mirrored - 1][0] = imgData[width_mirrored - 2][1];									// Top-right
+		imgData[0][height_mirrored - 1] = imgData[1][height_mirrored - 2];									// Bottom-left
+		imgData[width_mirrored - 1][height_mirrored - 1] = imgData[width_mirrored - 2][height_mirrored - 2];// Bottom-right
+
+		// Intensity Mean
+		//float img_mean = computeImageMeanIntesity(imgData, m_img.width(), m_img.height());
+		//qDebug() << "Intensity Mean:" << img_mean;
+	}
+
+	return imgData;
 }
 
 double ImageProcessing::computeImageMeanIntesity(QImage img)
@@ -770,11 +826,21 @@ void ImageProcessing::exportQImageToPGM(QImage img, QString filename)
 }
 
 void ImageProcessing::exportToPGM(QVector<QVector<float>> imageData, QString filename) {
+
+	QString directory = "C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/ImageViewerSO/data";
+	QDir dir(directory);
+	if (!dir.exists()) {
+		dir.mkpath(directory);
+	}
+
+	// Construct the full file path
+	QString filePath = dir.filePath(filename);
+
 	int width = imageData.size();
 	if (width == 0) return;
 	int height = imageData[0].size();
 
-	QFile file(filename);
+	QFile file(filePath);
 	if (!file.open(QIODevice::WriteOnly)) {
 		qDebug() << "Failed to open file for writing:" << filename;
 		return;

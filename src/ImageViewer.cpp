@@ -209,7 +209,6 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 	ImageProcessing IPmodul;
 	if (timeStep >= 0.3) {
 		images_IS.append(img_original);
-		//QVector<QImage> new_imgs = IPmodul.schemeImplicitFloat(*vW->getImage(), stepCount, timeStep);
 		QVector<QImage> new_imgs = IPmodul.schemeImplicit(*vW->getImage(), stepCount, timeStep);
 		images_IS.append(new_imgs);
 		if (!images_IS.isEmpty()) {
@@ -245,12 +244,14 @@ void ImageViewer::on_actionEdge_Detector_triggered()
 
 	ui->IDiterationsspinBox->setEnabled(false);
 	ImageProcessing IPmodul;
-	QImage new_img;
-	IPmodul.EdgeDetector(*vW->getImage());
-
+	QImage new_img = IPmodul.EdgeDetectorImg(*vW->getImage());
+	//IPmodul.EdgeDetector(*vW->getImage());
 	QMessageBox::information(NULL, "Message", "Edge Detector Done!\nExported to PGM file");
+	vW->setImage(new_img);
+	vW->update();
 }
 
+// SpinBox for Image Vector Index
 void ImageViewer::updateImageFromSpinBoxExplicitLH(int index)
 {
 	if (index >= 0 && index < images_ES.size()) {
@@ -258,7 +259,6 @@ void ImageViewer::updateImageFromSpinBoxExplicitLH(int index)
 		vW->update();
 	}
 }
-
 void ImageViewer::updateImageFromSpinBoxImplicitLH(int index)
 {
 	if (index >= 0 && index < images_IS.size()) {
