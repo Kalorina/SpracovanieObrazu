@@ -31,7 +31,7 @@ private:
 	double timeStep = 0.5;
 	int stepCount = 10;
 	double omega = 0.5;
-	double K = 2.5;
+	double K = 0.01;
 
 	QVector<QImage> images_ES; // linear heat eq -> explicit scheme
 	QVector<QImage> images_IS; // linear heat eq -> implicit scheme

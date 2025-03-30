@@ -236,9 +236,9 @@ QImage ImageProcessing::Convolution(QImage img, int padding)
 	qDebug() << "Convolution done";
 }
 
-void ImageProcessing::EdgeDetector(QImage img)
+void ImageProcessing::EdgeDetectorSobelKernels(QImage img, float K)
 {
-	qDebug() << "Edge Detector -> Gradient of pixels ( filtered with IS-LHEq)";
+	qDebug() << "Edge Detector -> gradients: Sobel kernels (filtered with IS-LHEq)";
 	// Convert to grayscale if img is RGB
 	img = img.convertToFormat(QImage::Format_Grayscale8);
 	int padding = 1;
@@ -254,33 +254,28 @@ void ImageProcessing::EdgeDetector(QImage img)
 	QVector<QVector<float>> outputImgData(img.width(), QVector<float>(img.height(), 0.0f));
 
 	//float K = 1.0f; //Norm <0,10000>
-	float K = 2.5f; //RGB <0,5>
+	//float K = 2.5f; //RGB <0,5>
 
 	// Sobel filter
 	for (int x = 1; x < m_img.width() - 1; x++) {
 		for (int y = 1; y < m_img.height() - 1; y++) {
-			float gradE = 0, gradS = 0, gradDN = 0, gradDS = 0;
+			float grad_x = 0, grad_y = 0;
 
 			// convolution -> Sobel Kernel 4 directions 
 			for (int i = -1; i <= 1; i++) {
 				for (int j = -1; j <= 1; j++) {
 					double pixelVal = pixelValues[x + i][y + j];
-					gradE += GE[i + 1][j + 1] * pixelVal;
-					gradS += GS[i + 1][j + 1] * pixelVal;
-					gradDN += GdN[i + 1][j + 1] * pixelVal;
-					gradDS += GdS[i + 1][j + 1] * pixelVal;
+					grad_x += Gx[i + 1][j + 1] * pixelVal;
+					grad_y += Gy[i + 1][j + 1] * pixelVal;
 				}
 			}
 
-			float magE = std::abs(gradE);
-			float magS = std::abs(gradS);
-			float magDN = std::abs(gradDN);
-			float magDS = std::abs(gradDS);
+			float magE = std::abs(grad_x);
+			float magS = std::abs(grad_y);
 
 			// Compute mean gradient 
-			float magnitude = (magE + magS + magDN + magDS) / 4;
-			// normalized magnitude <0,1>
-			//double g_value = 1.0 / (1.0 + K * std::pow(magnitude, 2));
+			float magnitude = (magE + magS) / 2;
+			//float g_value = 1 / (1 + K * std::pow(magnitude, 2));
 			outputImgData[x - 1][y - 1] = qBound(0.0f, magnitude, 255.0f);
 		}
 	}
@@ -290,9 +285,9 @@ void ImageProcessing::EdgeDetector(QImage img)
 	exportQImageToPGM(convertToQImage(outputImgData,img.width(),img.height()), "edgeDetector_gradient_fromImg.pgm");
 }
 
-QImage ImageProcessing::EdgeDetectorImg(QImage img)
+QImage ImageProcessing::EdgeDetectorImgSobelKernels(QImage img, float K)
 {
-	qDebug() << "Edge Detector -> Gradient of pixels ( filtered with IS-LHEq)";
+	qDebug() << "Edge Detector -> gradients: Sobel Kernels (filtered with IS-LHEq)";
 	// Convert to grayscale if img is RGB
 	img = img.convertToFormat(QImage::Format_Grayscale8);
 	int padding = 1;
@@ -308,71 +303,190 @@ QImage ImageProcessing::EdgeDetectorImg(QImage img)
 	QVector<QVector<float>> outputImgData(img.width(), QVector<float>(img.height(), 0.0f));
 
 	//float K = 1.0f; //Norm <0,10000>
-	float K = 2.5f; //RGB <0,5>
+	//float K = 2.5f; //RGB <0,5>
 
 	// Sobel filter
 	for (int x = 1; x < m_img.width() - 1; x++) {
 		for (int y = 1; y < m_img.height() - 1; y++) {
-			float gradE = 0, gradS = 0, gradDN = 0, gradDS = 0;
+			float grad_x = 0, grad_y = 0;
 
-			// convolution -> Sobel Kernel 4 directions 
+			// convolution -> Sobel Kernel x and y directions 
 			for (int i = -1; i <= 1; i++) {
 				for (int j = -1; j <= 1; j++) {
 					double pixelVal = pixelValues[x + i][y + j];
-					gradE += GE[i + 1][j + 1] * pixelVal;
-					gradS += GS[i + 1][j + 1] * pixelVal;
-					gradDN += GdN[i + 1][j + 1] * pixelVal;
-					gradDS += GdS[i + 1][j + 1] * pixelVal;
+					grad_x += Gx[i + 1][j + 1] * pixelVal;
+					grad_y += Gy[i + 1][j + 1] * pixelVal;
 				}
 			}
 
-			float magE = std::abs(gradE);
-			float magS = std::abs(gradS);
-			float magDN = std::abs(gradDN);
-			float magDS = std::abs(gradDS);
+			float magE = std::abs(grad_x);
+			float magS = std::abs(grad_y);
 
 			// Compute mean gradient 
-			float magnitude = (magE + magS + magDN + magDS) / 4;
-			// normalized magnitude <0,1>
-			//double g_value = 1.0 / (1.0 + K * std::pow(magnitude, 2));
-			outputImgData[x - 1][y - 1] = qBound(0.0f, magnitude, 255.0f);
+			float magnitude = (magE + magS) / 2;
+			float g_value = 1 / (1 + K * std::pow(magnitude, 2));
+			outputImgData[x - 1][y - 1] = qBound(0.0f, g_value * 255.0, 255.0f);
 		}
 	}
 	//printImgData(outputImgData, m_img.width() / 2 - 10, m_img.width() / 2);
 	//printImgData(outputImgData);
 	qDebug() << "Edge Detector Done";
-	exportQImageToPGM(convertToQImage(outputImgData,img.width(),img.height()), "edgeDetector_gradient_fromImg.pgm");
-	QImage img_edgeD = convertToQImage(outputImgData,img.width(), img.height());
+	exportQImageToPGM(convertToQImage(outputImgData, img.width(), img.height()), "edgeDetector_SobelKernels.pgm");
+	QImage img_edgeD = convertToQImage(outputImgData, img.width(), img.height());
+	return img_edgeD;
+}
+
+QImage ImageProcessing::EdgeDetectorImgDirectEdges(QImage img, float K)
+{
+	qDebug() << "Edge Detector -> gradients: direct Edge (filtered with IS-LHEq)";
+	// Convert to grayscale if img is RGB
+	img = img.convertToFormat(QImage::Format_Grayscale8);
+	int padding = 1;
+	QImage m_img = pixelsMirror(img, padding);
+	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img); // RGB <0,255>
+	// QVector<QVector<float>> pixelValues = convertTo2DvectorNorm(m_img); // Normalized <0,1>
+	//printImgData(pixelValues, m_img.width() / 2 - 10, m_img.width() / 2 );
+
+	//pixelValues = schemeExplicitFloat(pixelValues, 1, 0.2);
+	pixelValues = schemeImplicitFloat(pixelValues, 1, 0.5, 1.25);
+	//printImgData(pixelValues, m_img.width() / 2 - 10, m_img.width() / 2 );
+
+	QVector<QVector<float>> outputImgData(img.width(), QVector<float>(img.height(), 0.0f));
+
+	//float K = 1.0f; //Norm <0,10000>
+	//float K = 0.005f; //RGB <0,5>
+	float h = 1.0f;
+
+	// Sobel filter
+	for (int x = 1; x < m_img.width() - 1; x++) {
+		for (int y = 1; y < m_img.height() - 1; y++) {
+			float gradX = 0, gradY = 0;
+			float g_E = 0, g_N = 0, g_W = 0, g_S = 0;
+			float normSq_qE = 0, normSq_qN = 0, normSq_qW = 0, normSq_qS = 0;
+
+			// E = (x + 1, y)
+			// W = (x - 1, y)
+			// N = (x, y - 1)
+			// S = (x, y + 1)
+			// NE = (x + 1, y - 1)
+			// SE = (x + 1, y + 1)
+			// SW = (x - 1, y + 1)
+			// NW = (x - 1, y - 1)
+			
+			//----- EAST edge -----//
+			// x -> (E - p) / h
+			// y -> (NE + N - S - SE) / 4h
+			gradX = (pixelValues[x + 1][y] - pixelValues[x][y]) / h;
+			gradY = (pixelValues[x + 1][y - 1] + pixelValues[x][y - 1] - pixelValues[x][y + 1] - pixelValues[x + 1][y + 1]) / (4.0 * h);
+
+			normSq_qE = gradX * gradX + gradY * gradY;
+			//g_E = diffCoefFunction(K, normSq);
+
+			//----- NORTH edge -----//
+			// y -> (N - p) / h
+			// x -> (W + NW - E - NE) / 4h 
+			gradX = (pixelValues[x-1][y] + pixelValues[x-1][y-1] - pixelValues[x+1][y] - pixelValues[x+1][y-1]) / (4.0 * h);
+			gradY = (pixelValues[x][y - 1] - pixelValues[x][y]) / h;
+
+			normSq_qN = gradX * gradX + gradY * gradY;
+			//g_N = diffCoefFunction(K, normSq);
+
+			//----- WEST edge -----//
+			// x -> (p - W) / h
+			// y -> (S + SW - N - NW) / 4h
+			gradX = (pixelValues[x - 1][y] - pixelValues[x][y]) / h;
+			gradY = (pixelValues[x][y + 1] + pixelValues[x - 1][y + 1] - pixelValues[x][y - 1] - pixelValues[x - 1][y - 1]) / (4.0 * h);
+
+			normSq_qW = gradX * gradX + gradY * gradY;
+			//g_W = diffCoefFunction(K, normSq);
+
+			//----- SOUTH edge -----//
+			// y -> (S - p) / h
+			// x -> (E + SE - W - SW) / 4h
+			gradX = (pixelValues[x + 1][y] + pixelValues[x + 1][y + 1] - pixelValues[x - 1][y] - pixelValues[x - 1][y + 1]) / (4.0 * h);
+			gradY = (pixelValues[x][y + 1] - pixelValues[x][y]) / h;
+
+			normSq_qS = gradX * gradX + gradY * gradY;
+			//g_S = diffCoefFunction(K, normSq);
+
+			// Compute mean gradient 
+			float magnitude = (normSq_qE + normSq_qN + normSq_qW + normSq_qS) / 4;
+			float g_value = diffCoefFunction(K, magnitude);
+			outputImgData[x - 1][y - 1] = qBound(0.0f, g_value * 255.0, 255.0f);
+		}
+	}
+	//printImgData(outputImgData, m_img.width() / 2 - 10, m_img.width() / 2);
+	//printImgData(outputImgData);
+	qDebug() << "Edge Detector 2 Done";
+	exportQImageToPGM(convertToQImage(outputImgData, img.width(), img.height()), "edgeDetector_DirectEdge.pgm");
+	QImage img_edgeD = convertToQImage(outputImgData, img.width(), img.height());
 	return img_edgeD;
 }
 
 QVector<float> ImageProcessing::EdgeDetectorGradient3x3(QVector<QVector<float>> imgData, int x, int y)
 {
+	// imgData -> 3x3 matrix in 2D vector
+
 	if (imgData.size() != 3 || imgData[0].size() != 3) {
 		return QVector<float>(4, 0.0f);
 	}
 
-	QVector<float> gradients(4, 0.0f); // 4 directions N, E, S, W
+	QVector<float> gradients(4, 0.0f); // 4 directions E, N, W, S
 	
-	float gradE = 0, gradS = 0, gradDN = 0, gradDS = 0;
+	float gradX = 0, gradY = 0;
+	double h = 0.0;
 
-	for (int i = -1; i <= 1; i++) {
-		for (int j = -1; j <= 1; j++) {
-			double pixelVal = imgData[x + i][y + j];
-			gradE += GE[i + 1][j + 1] * pixelVal;
-			gradS += GS[i + 1][j + 1] * pixelVal;
-			gradDN += GdN[i + 1][j + 1] * pixelVal;
-			gradDS += GdS[i + 1][j + 1] * pixelVal;
-		}
-	}
+	// E = (x + 1, y)
+	// W = (x - 1, y)
+	// N = (x, y - 1)
+	// S = (x, y + 1)
+	// NE = (x + 1, y - 1)
+	// SE = (x + 1, y + 1)
+	// SW = (x - 1, y + 1)
+	// NW = (x - 1, y - 1)
 
-	// magnitudes
-	gradients.append(std::abs(gradE));
-	gradients.append(std::abs(gradS));
-	gradients.append(std::abs(gradDN));
-	gradients.append(std::abs(gradDS));
+	//----- EAST edge -----//
+	// x -> (E - p) / h
+	// y -> (NE + N - S - SE) / 4h
+	gradX = (imgData[x + 1][y] - imgData[x][y]) / h;
+	gradY = (imgData[x + 1][y - 1] + imgData[x][y - 1] - imgData[x][y + 1] - imgData[x + 1][y + 1]) / (4.0 * h);
 
-	//qDebug() << "Edge Detector -> Gradient of pixels for Perona-Malikova Done";
+	float normSq_qE = gradX * gradX + gradY * gradY;
+	//g_E = diffCoefFunction(K, normSq);
+
+	//----- NORTH edge -----//
+	// y -> (N - p) / h
+	// x -> (W + NW - E - NE) / 4h 
+	gradX = (imgData[x - 1][y] + imgData[x - 1][y - 1] - imgData[x + 1][y] - imgData[x + 1][y - 1]) / (4.0 * h);
+	gradY = (imgData[x][y - 1] - imgData[x][y]) / h;
+
+	float normSq_qN = gradX * gradX + gradY * gradY;
+	//g_N = diffCoefFunction(K, normSq);
+
+	//----- WEST edge -----//
+	// x -> (p - W) / h
+	// y -> (S + SW - N - NW) / 4h
+	gradX = (imgData[x - 1][y] - imgData[x][y]) / h;
+	gradY = (imgData[x][y + 1] + imgData[x - 1][y + 1] - imgData[x][y - 1] - imgData[x - 1][y - 1]) / (4.0 * h);
+
+	float normSq_qW = gradX * gradX + gradY * gradY;
+	//g_W = diffCoefFunction(K, normSq);
+
+	//----- SOUTH edge -----//
+	// y -> (S - p) / h
+	// x -> (E + SE - W - SW) / 4h
+	gradX = (imgData[x + 1][y] + imgData[x + 1][y + 1] - imgData[x - 1][y] - imgData[x - 1][y + 1]) / (4.0 * h);
+	gradY = (imgData[x][y + 1] - imgData[x][y]) / h;
+
+	float normSq_qS = gradX * gradX + gradY * gradY;
+	//g_S = diffCoefFunction(K, normSq);
+
+	gradients.append(normSq_qE);
+	gradients.append(normSq_qN);
+	gradients.append(normSq_qW);
+	gradients.append(normSq_qS);
+
+	//qDebug() << "Edge Detector -> Direct gradients of pixel for Perona-Malikova Done";
 	return gradients;
 }
 
@@ -491,7 +605,7 @@ QVector<QVector<float>> ImageProcessing::schemeExplicitFloat(QVector<QVector<flo
 	return outputImgData;
 }
 
-QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, double timeStep)
+QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, double timeStep, double omega)
 {
 	QVector<QImage> images;
 
@@ -518,7 +632,7 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 	// A * phi = b
 	// Aii = 1 + 4 * timeStep
 	// Aij = -timeStep
-	double omega = 1.25;
+	//double omega = 1.25;
 	const int MAX_ITER = 1000;
 	const double TOL = 1.0E-6;
 	double Aii = 1.0 + 4 * timeStep;
@@ -536,9 +650,9 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 			iter++;
 			rezid = 0.0;
 
-			for (int x = padding; x < width + padding; x++)
+			for (int x = 1; x < m_img.width() - 1; x++)
 			{
-				for (int y = padding; y < height + padding; y++)
+				for (int y = 1; y < m_img.height() - 1; y++)
 				{
 					float neighborSum =
 						pixelValues[x - 1][y] +   // left (West)
@@ -560,7 +674,7 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 			rezid = sqrt(rezid / (width * height));
 			//qDebug() << "rezid:" << rezid;
 			if (rezid < TOL) {
-				//qDebug() << "break; rezid:" << rezid;
+				qDebug() << "break; iter:" << iter << "rezid:" << rezid;
 				break;
 			}
 				
@@ -587,8 +701,8 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 		qDebug() << "Intensity Mean:" << img_mean;
 
 		// Convert updated new pixel values back to QImage
-		QImage currentImg = convertToQImageMirrored(pixelValues, m_img.width(), m_img.height(), 1);
-		images.append(currentImg);
+		//QImage currentImg = convertToQImageMirrored(pixelValues, m_img.width(), m_img.height(), 1);
+		images.append(convertToQImageMirrored(pixelValues, m_img.width(), m_img.height(), 1));
 	}
 
 	return images;
@@ -705,11 +819,29 @@ QVector<QImage> ImageProcessing::schemeSemi_Implicit(QImage img, int stepCount, 
 	// Convert to 2D vector
 	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img);
 
-	// Perona-Malikova Diffusion
+	QVector<float> b(img.width() * img.height(), 0.0);	// RHS vector (b) 
+	// Initialize b with original values
+	for (int y = 0; y < img.height(); y++) {
+		for (int x = 0; x < img.width(); x++) {
+			b[y * img.width() + x] = pixelValues[x + padding][y + padding];
+		}
+	}
 
+	// system matrix coefficients
+	double Aii = 0.0; // = 1 + tau * (g_N + g_S + g_E + g_W)
+	double Aij_N = 0.0; // = - tau * g_N
+	double Aij_S = 0.0; // = - tau * g_S
+	double Aij_E = 0.0; // = - tau * g_E
+	double Aij_W = 0.0; // = - tau * g_W
+	double neighborSum = 0.0;
+	double sigmaSOR = 0.0;
+	const int MAX_ITER = 1000;
+	const double TOL = 1.0E-6;
+
+	// Perona-Malikova Diffusion
 	for (int step = 0; step < stepCount; step++)
 	{
-		//Filter data with ES/IS-LHEq due to tau=stimeStep
+		//Filter data with ES/IS-LHEq due to tau=timeStep
 		int insideStepCount = 1;
 		if (timeStep <= 0.25){ 
 			pixelValues = schemeExplicitFloat(pixelValues, insideStepCount, timeStep);
@@ -718,46 +850,77 @@ QVector<QImage> ImageProcessing::schemeSemi_Implicit(QImage img, int stepCount, 
 			pixelValues = schemeImplicitFloat(pixelValues, insideStepCount, timeStep, 1.25);
 		}
 
-		// Update pixel values
-		for (int x = 1; x < m_img.width() - 1; x++) {
-			for (int y = 1; y < m_img.height() - 1; y++) {
-				
-				// Select 3x3 pixels
-				QVector<QVector<float>> selectedPixels = pixelSelection3x3(pixelValues, x, y); // 3x3
+		double rezid = 0.0;
+		int iter = 0;
 
-				// Compute gradient of pixels
-				QVector<float> gradients = EdgeDetectorGradient3x3(selectedPixels, 1, 1); // 3x3
+		do
+		{
+			iter++;
+			rezid = 0.0;
 
-				float u_p_n = pixelValues[x][y];
+			for (int x = 1; x < m_img.width() - 1; x++) {
+				for (int y = 1; y < m_img.height() - 1; y++) {
 
-				// Mirrored neighbors
-				float u_qE = pixelValues[x + 1][y];
-				float u_qW = pixelValues[x - 1][y];
-				float u_qN = pixelValues[x][y + 1];
-				float u_qS = pixelValues[x][y - 1];
+					// Select 3x3 pixels
+					QVector<QVector<float>> selectedPixels = pixelSelection3x3(pixelValues, x, y); // 3x3
 
-				/*magnitudes
-				gradients.append(std::abs(gradE));
-				gradients.append(std::abs(gradS));
-				gradients.append(std::abs(gradDN));
-				gradients.append(std::abs(gradDS));
-				*/
+					// Compute gradient of pixels inside 3x3 window, center pixel is at (1,1)
+					QVector<float> gradients = EdgeDetectorGradient3x3(selectedPixels, 1, 1); // 3x3
 
-				float g_uE = 1 / (1 + K * std::pow(gradients[0], 2));  
-				float g_uS = 1 / (1 + K * std::pow(gradients[1], 2)); // West direction
-				float g_uDN = 1 / (1 + K * std::pow(gradients[2], 2));
-				float g_uDS = 1 / (1 + K * std::pow(gradients[3], 2)); // South direction
+					float u_p = pixelValues[x][y]; // actual center pixel value
 
-				// Perona-Malikova Diffusion
-				float newVal = u_p_n + timeStep * (
-					g_uE * (u_qE - u_p_n) +  // East direction (x direction)
-					g_uS * (u_qW - u_p_n) +  // West direction (y direction)
-					g_uDN * (u_qN - u_p_n) +  // North direction (d1 direction)
-					g_uDS * (u_qS - u_p_n)    // South direction (d2 direction)
-					);
-				pixelValues[x][y] = newVal;
+					// neighbors
+					float u_qE = pixelValues[x + 1][y];
+					float u_qW = pixelValues[x - 1][y];
+					float u_qN = pixelValues[x][y + 1];
+					float u_qS = pixelValues[x][y - 1];
+
+					/*
+					gradients.append(normSq_qE);
+					gradients.append(normSq_qN);
+					gradients.append(normSq_qW);
+					gradients.append(normSq_qS);
+					*/
+
+					float g_uE = 1 / (1 + K * gradients[0]);	// East direction
+					float g_uN = 1 / (1 + K * gradients[1]);	// North direction
+					float g_uW = 1 / (1 + K * gradients[2]);	// West direction
+					float g_uS = 1 / (1 + K * gradients[3]);	// South direction
+					
+					//float newVal = u_p + timeStep * (
+					//	g_uE * (u_qE - u_p) +		// East direction 
+					//	g_uN * (u_qN - u_p) +		// North direction 
+					//	g_uW * (u_qW - u_p) +		// West direction 
+					//	g_uS * (u_qS - u_p)			// South direction 
+					//	);
+
+					// Perona-Malikova Diffusion 
+					// Implicit
+					Aii = 1 + timeStep * (g_uN + g_uS + g_uE + g_uW);
+					Aij_N = -timeStep * g_uN;
+					Aij_S = -timeStep * g_uS;
+					Aij_E = -timeStep * g_uE;
+					Aij_W = -timeStep * g_uW;
+
+					float originalVal = pixelValues[x][y];
+					sigmaSOR = Aij_E * u_qE + Aij_N * u_qN + Aij_W * u_qW + Aij_S * u_qS;
+					float newVal = (1.0 - omega) * originalVal + (omega / Aii) * (b[(y - padding) * img.width() + (x - padding)] - sigmaSOR);
+					
+					rezid += (newVal - originalVal) * (newVal - originalVal);
+					
+					pixelValues[x][y] = newVal;
+				}
 			}
-		}
+
+			// Stopping condition - convergence
+			rezid = sqrt(rezid / (img.width() * img.height()));
+			//qDebug() << "rezid:" << rezid;
+			if (rezid < TOL) {
+				qDebug() << "break; iter:" << iter << "rezid:" << rezid;
+				break;
+			}
+
+		} while (iter < MAX_ITER);
 
 		// mirroring: boundary conditions -> zero flux
 		// edges
@@ -785,7 +948,6 @@ QVector<QImage> ImageProcessing::schemeSemi_Implicit(QImage img, int stepCount, 
 		images.append(currentImg);
 	}
 
-	qDebug() << "Semi-Implicit Diffusion Done";
 	return images;
 }
 

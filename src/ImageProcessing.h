@@ -60,15 +60,18 @@ public:
 	QImage Convolution(QImage img, int padding);
 	
 	// Edge Detector
-	void EdgeDetector(QImage img);		// export to PGM
-	QImage EdgeDetectorImg(QImage img); // Edge Detector to show in ImageViewer
+	void EdgeDetectorSobelKernels(QImage img, float K);		// export to PGM
+	QImage EdgeDetectorImgSobelKernels(QImage img, float K); // with Sobel kernels masks 4 direction: x,y,xy,-xy
+	QImage EdgeDetectorImgDirectEdges(QImage img, float K); // with each edge separately
 	QVector<float> EdgeDetectorGradient3x3(QVector<QVector<float>> imgData, int x, int y); // Edge Detector for Semi-implicit scheme
+
+	double diffCoefFunction(double K, double normGradSquared) { return 1.0 / (1.0 + K * normGradSquared); }
 
 	// Heat Equation 
 	QVector<QImage> schemeExplicit(QImage img, int stepCount, double timeStep);
 	QVector<QVector<float>> schemeExplicitFloat(QVector<QVector<float>> imgData, int stepCount, double timeStep);
 
-	QVector<QImage> schemeImplicit(QImage img, int stepCount, double timeStep);
+	QVector<QImage> schemeImplicit(QImage img, int stepCount, double timeStep, double omega);
 	QVector<QVector<float>> schemeImplicitFloat(QVector<QVector<float>> imgData, int stepCount, double timeStep, double omega);
 	
 	// Linear Diffusion
@@ -103,19 +106,13 @@ private:
 		{0.001813519368126,   0.042330847554975,   0.117439994473243,   0.042330847554975,   0.001813519368126},
 		{0.000077693991227,   0.001813519368126,   0.005031312077870,   0.001813519368126,   0.000077693991227}
 	};
-	// Sobel kernels
-	QVector<QVector<int>> GE = { {-1, 0, 1},
-								 {-2, 0, 2},
-								 {-1, 0, 1} };
-	QVector<QVector<int>> GS = { {-1, -2, -1},
-								 {0, 0, 0},
-								 {1, 2, 1} };
-	// Diagonal north
-	QVector<QVector<int>> GdN = { {0, 1, 2},
-								  {-1, 0, 1},
-								  {-2, -1, 0} }; // Diagonal 45°
-	// Diagonal south
-	QVector<QVector<int>> GdS = { {2, 1, 0},
-								  {1, 0, -1},
-								  {0, -1, -2} }; // Diagonal 135°
+	// Gradient masks - Sobel kernels
+	QVector<QVector<int>> Gx = 
+	{	{-1, 0, 1}, 
+		{-2, 0, 2},
+		{-1, 0, 1} };
+	QVector<QVector<int>> Gy = 
+	{	{1, 2, 1}, 
+		{0, 0, 0}, 
+		{-1, -2, -1} };
 };

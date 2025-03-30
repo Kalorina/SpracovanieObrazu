@@ -211,15 +211,17 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 
 	stepCount = ui->stepCountspinBox->value();  
 	timeStep = ui->timeStepdoubleSpinBox->value();
+	omega = ui->doubleSpinBoxOmega->value();
 	images_ES.clear();
 	images_IS.clear();
+	images_SIS.clear();
 	// qDebug() << "Step Count:" << stepCount;
 	// qDebug() << "Time Step:" << timeStep;
 
 	ImageProcessing IPmodul;
 	if (timeStep >= 0.3) {
 		images_IS.append(img_original);
-		QVector<QImage> new_imgs = IPmodul.schemeImplicit(*vW->getImage(), stepCount, timeStep);
+		QVector<QImage> new_imgs = IPmodul.schemeImplicit(*vW->getImage(), stepCount, timeStep, omega);
 		images_IS.append(new_imgs);
 		if (!images_IS.isEmpty()) {
 			qDebug() << "Showing last solution of T =" << stepCount;
@@ -252,9 +254,14 @@ void ImageViewer::on_actionEdge_Detector_triggered()
 		false;
 	}
 
+	//K = ui->doubleSpinBoxK->value();
+	// K -> <,5> RGB 
+	float K_Sobel = 0.0001;
+	float K_Edges = 0.005;
 	ui->IDiterationsspinBox->setEnabled(false);
 	ImageProcessing IPmodul;
-	QImage new_img = IPmodul.EdgeDetectorImg(*vW->getImage());
+	//QImage new_img = IPmodul.EdgeDetectorImgSobelKernels(*vW->getImage(), K_Sobel);
+	QImage new_img = IPmodul.EdgeDetectorImgDirectEdges(*vW->getImage(), K_Edges);
 	//IPmodul.EdgeDetector(*vW->getImage());
 	QMessageBox::information(NULL, "Message", "Edge Detector Done!\nExported to PGM file");
 	vW->setImage(new_img);
@@ -269,6 +276,8 @@ void ImageViewer::on_actionSemi_Implicit_Scheme_Diffusion_triggered()
 	omega = ui->doubleSpinBoxOmega->value();
 	K = ui->doubleSpinBoxK->value();
 	images_SIS.clear();
+	images_ES.clear();
+	images_IS.clear();
 
 	ImageProcessing IPmodul;
 	images_SIS.append(img_original);
