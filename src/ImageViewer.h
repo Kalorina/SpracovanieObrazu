@@ -30,7 +30,7 @@ private:
 	// Variables Exlicit, Implicit, Semi-Implicit
 	double timeStep = 0.5;
 	int stepCount = 10;
-	double omega = 0.5;
+	double sigma = 0.5;
 	double K = 0.01;
 
 	QVector<QImage> images_ES; // linear heat eq -> explicit scheme

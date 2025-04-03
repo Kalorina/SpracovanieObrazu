@@ -14,7 +14,7 @@ ImageViewer::ImageViewer(QWidget* parent)
 
 	ui->stepCountspinBox->setValue(stepCount);
 	ui->timeStepdoubleSpinBox->setValue(timeStep);
-	ui->doubleSpinBoxOmega->setValue(omega);
+	ui->doubleSpinBoxSigma->setValue(sigma);
 	ui->doubleSpinBoxK->setValue(K);
 	ui->IDiterationsspinBox->setEnabled(false);
 	ui->IDiterationsspinBox->setMinimum(0);
@@ -211,7 +211,7 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 
 	stepCount = ui->stepCountspinBox->value();  
 	timeStep = ui->timeStepdoubleSpinBox->value();
-	omega = ui->doubleSpinBoxOmega->value();
+	sigma = ui->doubleSpinBoxSigma->value();
 	images_ES.clear();
 	images_IS.clear();
 	images_SIS.clear();
@@ -219,9 +219,9 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 	// qDebug() << "Time Step:" << timeStep;
 
 	ImageProcessing IPmodul;
-	if (timeStep >= 0.3) {
+	if (timeStep > 0.2) {
 		images_IS.append(img_original);
-		QVector<QImage> new_imgs = IPmodul.schemeImplicit(*vW->getImage(), stepCount, timeStep, omega);
+		QVector<QImage> new_imgs = IPmodul.schemeImplicit(*vW->getImage(), stepCount, timeStep);
 		images_IS.append(new_imgs);
 		if (!images_IS.isEmpty()) {
 			qDebug() << "Showing last solution of T =" << stepCount;
@@ -273,15 +273,16 @@ void ImageViewer::on_actionSemi_Implicit_Scheme_Diffusion_triggered()
 
 	stepCount = ui->stepCountspinBox->value();
 	timeStep = ui->timeStepdoubleSpinBox->value();
-	omega = ui->doubleSpinBoxOmega->value();
+	sigma = ui->doubleSpinBoxSigma->value();
 	K = ui->doubleSpinBoxK->value();
 	images_SIS.clear();
 	images_ES.clear();
 	images_IS.clear();
-
+	float KK = 0.0001;
+	double omega = 1.25;
 	ImageProcessing IPmodul;
 	images_SIS.append(img_original);
-	QVector<QImage> new_imgs = IPmodul.schemeSemi_Implicit(*vW->getImage(), stepCount, timeStep, omega, K);
+	QVector<QImage> new_imgs = IPmodul.schemeSemi_Implicit(*vW->getImage(), stepCount, timeStep, omega, sigma, KK);
 	images_SIS.append(new_imgs);
 	if (!images_SIS.isEmpty()) {
 		qDebug() << "Showing last solution of T =" << stepCount;

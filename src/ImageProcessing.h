@@ -71,11 +71,11 @@ public:
 	QVector<QImage> schemeExplicit(QImage img, int stepCount, double timeStep);
 	QVector<QVector<float>> schemeExplicitFloat(QVector<QVector<float>> imgData, int stepCount, double timeStep);
 
-	QVector<QImage> schemeImplicit(QImage img, int stepCount, double timeStep, double omega);
-	QVector<QVector<float>> schemeImplicitFloat(QVector<QVector<float>> imgData, int stepCount, double timeStep, double omega);
+	QVector<QImage> schemeImplicit(QImage img, int stepCount, double timeStep);
+	QVector<QVector<float>> schemeImplicitFloat(QVector<QVector<float>> imgData, int stepCount, double timeStep);
 	
 	// Linear Diffusion
-	QVector<QImage> schemeSemi_Implicit(QImage img, int stepCount, double timeStep, double omega, double K);
+	QVector<QImage> schemeSemi_Implicit(QImage img, int stepCount, double timeStep, double omega, double sigma, double K);
 	QVector<QVector<float>> pixelSelection3x3(QVector<QVector<float>> imgData, int x, int y);
 
 	double computeImageMeanIntesity(QImage img);

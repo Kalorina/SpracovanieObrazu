@@ -248,7 +248,7 @@ void ImageProcessing::EdgeDetectorSobelKernels(QImage img, float K)
 	//printImgData(pixelValues, m_img.width() / 2 - 10, m_img.width() / 2 );
 
 	//pixelValues = schemeExplicitFloat(pixelValues, 1, 0.2);
-	pixelValues = schemeImplicitFloat(pixelValues, 1, 0.5, 1.25);
+	pixelValues = schemeImplicitFloat(pixelValues, 1, 0.5);
 	//printImgData(pixelValues, m_img.width() / 2 - 10, m_img.width() / 2 );
 
 	QVector<QVector<float>> outputImgData(img.width(), QVector<float>(img.height(), 0.0f));
@@ -297,7 +297,7 @@ QImage ImageProcessing::EdgeDetectorImgSobelKernels(QImage img, float K)
 	//printImgData(pixelValues, m_img.width() / 2 - 10, m_img.width() / 2 );
 
 	//pixelValues = schemeExplicitFloat(pixelValues, 1, 0.2);
-	pixelValues = schemeImplicitFloat(pixelValues, 1, 0.5, 1.25);
+	pixelValues = schemeImplicitFloat(pixelValues, 1, 0.5);
 	//printImgData(pixelValues, m_img.width() / 2 - 10, m_img.width() / 2 );
 
 	QVector<QVector<float>> outputImgData(img.width(), QVector<float>(img.height(), 0.0f));
@@ -348,7 +348,7 @@ QImage ImageProcessing::EdgeDetectorImgDirectEdges(QImage img, float K)
 	//printImgData(pixelValues, m_img.width() / 2 - 10, m_img.width() / 2 );
 
 	//pixelValues = schemeExplicitFloat(pixelValues, 1, 0.2);
-	pixelValues = schemeImplicitFloat(pixelValues, 1, 0.5, 1.25);
+	pixelValues = schemeImplicitFloat(pixelValues, 1, 0.5);
 	//printImgData(pixelValues, m_img.width() / 2 - 10, m_img.width() / 2 );
 
 	QVector<QVector<float>> outputImgData(img.width(), QVector<float>(img.height(), 0.0f));
@@ -434,7 +434,7 @@ QVector<float> ImageProcessing::EdgeDetectorGradient3x3(QVector<QVector<float>> 
 	QVector<float> gradients(4, 0.0f); // 4 directions E, N, W, S
 	
 	float gradX = 0, gradY = 0;
-	double h = 0.0;
+	double h = 1.0;
 
 	// E = (x + 1, y)
 	// W = (x - 1, y)
@@ -605,7 +605,7 @@ QVector<QVector<float>> ImageProcessing::schemeExplicitFloat(QVector<QVector<flo
 	return outputImgData;
 }
 
-QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, double timeStep, double omega)
+QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, double timeStep)
 {
 	QVector<QImage> images;
 
@@ -629,16 +629,16 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 	}
 
 	// SOR parameters
-	// A * phi = b
+	// A * phi = b phi -> pixel values
 	// Aii = 1 + 4 * timeStep
 	// Aij = -timeStep
-	//double omega = 1.25;
+	double omega = 1.25;
 	const int MAX_ITER = 1000;
 	const double TOL = 1.0E-6;
 	double Aii = 1.0 + 4 * timeStep;
 	double Aij = -timeStep;
 
-	qDebug() << "Linear Heat Eq Implicit scheme SOR method MaxIter" << MAX_ITER << " omega:" << omega << "tolerance:" << TOL;
+	qDebug() << "Linear Heat Eq Implicit scheme SOR method MaxIter" << MAX_ITER << "tolerance:" << TOL;
 
 	for (int t = 0; t < stepCount; t++)
 	{
@@ -674,7 +674,7 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 			rezid = sqrt(rezid / (width * height));
 			//qDebug() << "rezid:" << rezid;
 			if (rezid < TOL) {
-				qDebug() << "break; iter:" << iter << "rezid:" << rezid;
+				//qDebug() << "break; iter:" << iter << "rezid:" << rezid;
 				break;
 			}
 				
@@ -708,7 +708,7 @@ QVector<QImage> ImageProcessing::schemeImplicit(QImage img, int stepCount, doubl
 	return images;
 }
 
-QVector<QVector<float>> ImageProcessing::schemeImplicitFloat(QVector<QVector<float>> imgData, int stepCount, double timeStep, double omega)
+QVector<QVector<float>> ImageProcessing::schemeImplicitFloat(QVector<QVector<float>> imgData, int stepCount, double timeStep)
 {
 	int padding = 1;
 
@@ -731,7 +731,7 @@ QVector<QVector<float>> ImageProcessing::schemeImplicitFloat(QVector<QVector<flo
 	// A * phi = b
 	// Aii = 1 + 4 * timeStep
 	// Aij = -timeStep
-	//double omega = 1.25;
+	double omega = 1.25;
 	const int MAX_ITER = 1000;
 	const double TOL = 1.0E-6;
 	double Aii = 1.0 + 4 * timeStep;
@@ -803,9 +803,8 @@ QVector<QVector<float>> ImageProcessing::schemeImplicitFloat(QVector<QVector<flo
 	return imgData;
 }
 
-QVector<QImage> ImageProcessing::schemeSemi_Implicit(QImage img, int stepCount, double timeStep, double omega, double K)
+QVector<QImage> ImageProcessing::schemeSemi_Implicit(QImage img, int stepCount, double timeStep, double omega, double sigma, double K)
 {
-	qDebug() << "Semi-Implicit Diffusion Perona-Malikova method";
 	QVector<QImage> images;
 
 	if (img.isNull() || stepCount <= 0 || timeStep <= 0 || omega <= 0 || K <=0) {
@@ -818,6 +817,8 @@ QVector<QImage> ImageProcessing::schemeSemi_Implicit(QImage img, int stepCount, 
 
 	// Convert to 2D vector
 	QVector<QVector<float>> pixelValues = convertTo2Dvector(m_img);
+	QVector<QVector<float>> selectedPixels(3, QVector<float>(3, 0.0f));
+	QVector<float> gradients(4, 0.0f); // 4 directions E, N, W, S
 
 	QVector<float> b(img.width() * img.height(), 0.0);	// RHS vector (b) 
 	// Initialize b with original values
@@ -834,59 +835,109 @@ QVector<QImage> ImageProcessing::schemeSemi_Implicit(QImage img, int stepCount, 
 	double Aij_E = 0.0; // = - tau * g_E
 	double Aij_W = 0.0; // = - tau * g_W
 	double neighborSum = 0.0;
-	double sigmaSOR = 0.0;
 	const int MAX_ITER = 1000;
-	const double TOL = 1.0E-6;
+	const double TOL = 1.0E-3;
+	float sigmaSOR = 0.0;
+
+	double h = 1.0;
+	qDebug() << "Semi-Implicit Diffusion Perona-Malikova method; MaxIter" << MAX_ITER << "tolerance:" << TOL;
+
+	//Filter data with ES/IS-LHEq due to tau=timeStep
+	int insideStepCount = 1;
+	if (sigma <= 0.25) {
+		pixelValues = schemeExplicitFloat(pixelValues, insideStepCount, timeStep);
+	}
+	else {
+		pixelValues = schemeImplicitFloat(pixelValues, insideStepCount, timeStep);
+	}
 
 	// Perona-Malikova Diffusion
 	for (int step = 0; step < stepCount; step++)
 	{
-		//Filter data with ES/IS-LHEq due to tau=timeStep
-		int insideStepCount = 1;
-		if (timeStep <= 0.25){ 
-			pixelValues = schemeExplicitFloat(pixelValues, insideStepCount, timeStep);
-		}
-		else{ 
-			pixelValues = schemeImplicitFloat(pixelValues, insideStepCount, timeStep, 1.25);
-		}
-
 		double rezid = 0.0;
+		double temp = 0.0;
 		int iter = 0;
+		float g_uE = 0.0, g_uN = 0.0, g_uW = 0.0, g_uS = 0.0;
+		float u_qE = 0.0, u_qN = 0.0, u_qW = 0.0, u_qS = 0.0;
+		float originalVal = 0.0, newVal = 0.0;
+		float normSq_qE = 0.0, normSq_qN = 0.0, normSq_qW = 0.0, normSq_qS = 0.0;
+		float gradX = 0, gradY = 0;
 
 		do
 		{
 			iter++;
 			rezid = 0.0;
+			temp = 0.0;
 
 			for (int x = 1; x < m_img.width() - 1; x++) {
 				for (int y = 1; y < m_img.height() - 1; y++) {
 
 					// Select 3x3 pixels
-					QVector<QVector<float>> selectedPixels = pixelSelection3x3(pixelValues, x, y); // 3x3
+					//QVector<QVector<float>> selectedPixels = pixelSelection3x3(pixelValues, x, y); // 3x3
+					/*for (int i = -1; i <= 1; i++) {
+						for (int j = -1; j <= 1; j++) {
+							selectedPixels[i + 1][i + 1] = pixelValues[x + i][y + j];
+						}
+					}*/
+
 
 					// Compute gradient of pixels inside 3x3 window, center pixel is at (1,1)
-					QVector<float> gradients = EdgeDetectorGradient3x3(selectedPixels, 1, 1); // 3x3
+					//gradients = EdgeDetectorGradient3x3(selectedPixels, 1, 1); // 3x3
+					// 
+					//g_uE = 1 / (1 + K * gradients[0]);	// East direction
+					//g_uN = 1 / (1 + K * gradients[1]);	// North direction
+					//g_uW = 1 / (1 + K * gradients[2]);	// West direction
+					//g_uS = 1 / (1 + K * gradients[3]);	// South direction
+					// 
+					gradX = 0, gradY = 0;
+					normSq_qE = 0, normSq_qN = 0, normSq_qW = 0, normSq_qS = 0;
+					
+					//----- EAST edge -----//
+					// x -> (E - p) / h
+					// y -> (NE + N - S - SE) / 4h
+					gradX = (pixelValues[x + 1][y] - pixelValues[x][y]) / h;
+					gradY = (pixelValues[x + 1][y - 1] + pixelValues[x][y - 1] - pixelValues[x][y + 1] - pixelValues[x + 1][y + 1]) / (4.0 * h);
 
-					float u_p = pixelValues[x][y]; // actual center pixel value
+					normSq_qE = gradX * gradX + gradY * gradY;
+
+					//----- NORTH edge -----//
+					// y -> (N - p) / h
+					// x -> (W + NW - E - NE) / 4h 
+					gradX = (pixelValues[x - 1][y] + pixelValues[x - 1][y - 1] - pixelValues[x + 1][y] - pixelValues[x + 1][y - 1]) / (4.0 * h);
+					gradY = (pixelValues[x][y - 1] - pixelValues[x][y]) / h;
+
+					normSq_qN = gradX * gradX + gradY * gradY;
+
+					//----- WEST edge -----//
+					// x -> (p - W) / h
+					// y -> (S + SW - N - NW) / 4h
+					gradX = (pixelValues[x - 1][y] - pixelValues[x][y]) / h;
+					gradY = (pixelValues[x][y + 1] + pixelValues[x - 1][y + 1] - pixelValues[x][y - 1] - pixelValues[x - 1][y - 1]) / (4.0 * h);
+
+					normSq_qW = gradX * gradX + gradY * gradY;
+
+					//----- SOUTH edge -----//
+					// y -> (S - p) / h
+					// x -> (E + SE - W - SW) / 4h
+					gradX = (pixelValues[x + 1][y] + pixelValues[x + 1][y + 1] - pixelValues[x - 1][y] - pixelValues[x - 1][y + 1]) / (4.0 * h);
+					gradY = (pixelValues[x][y + 1] - pixelValues[x][y]) / h;
+
+					normSq_qS = gradX * gradX + gradY * gradY;
+
+					g_uE = 1 / (1 + K * normSq_qE);	// East direction
+					g_uN = 1 / (1 + K * normSq_qN);	// North direction
+					g_uW = 1 / (1 + K * normSq_qW);	// West direction
+					g_uS = 1 / (1 + K * normSq_qS);	// South direction
+				
+					// actual center pixel value
+					originalVal = pixelValues[x][y];
 
 					// neighbors
-					float u_qE = pixelValues[x + 1][y];
-					float u_qW = pixelValues[x - 1][y];
-					float u_qN = pixelValues[x][y + 1];
-					float u_qS = pixelValues[x][y - 1];
+					u_qE = pixelValues[x + 1][y];
+					u_qW = pixelValues[x - 1][y];
+					u_qN = pixelValues[x][y - 1];
+					u_qS = pixelValues[x][y + 1];
 
-					/*
-					gradients.append(normSq_qE);
-					gradients.append(normSq_qN);
-					gradients.append(normSq_qW);
-					gradients.append(normSq_qS);
-					*/
-
-					float g_uE = 1 / (1 + K * gradients[0]);	// East direction
-					float g_uN = 1 / (1 + K * gradients[1]);	// North direction
-					float g_uW = 1 / (1 + K * gradients[2]);	// West direction
-					float g_uS = 1 / (1 + K * gradients[3]);	// South direction
-					
 					//float newVal = u_p + timeStep * (
 					//	g_uE * (u_qE - u_p) +		// East direction 
 					//	g_uN * (u_qN - u_p) +		// North direction 
@@ -902,19 +953,26 @@ QVector<QImage> ImageProcessing::schemeSemi_Implicit(QImage img, int stepCount, 
 					Aij_E = -timeStep * g_uE;
 					Aij_W = -timeStep * g_uW;
 
-					float originalVal = pixelValues[x][y];
 					sigmaSOR = Aij_E * u_qE + Aij_N * u_qN + Aij_W * u_qW + Aij_S * u_qS;
-					float newVal = (1.0 - omega) * originalVal + (omega / Aii) * (b[(y - padding) * img.width() + (x - padding)] - sigmaSOR);
-					
-					rezid += (newVal - originalVal) * (newVal - originalVal);
-					
+					newVal = (1.0 - omega) * originalVal + (omega / Aii) * (b[(y - padding) * img.width() + (x - padding)] - sigmaSOR);
 					pixelValues[x][y] = newVal;
 				}
 			}
 
+			for (int x = 1; x < m_img.width() - 1; x++) {
+				for (int y = 1; y < m_img.height() - 1; y++) {
+
+					// RESIDUALS TO DO
+					//rezid += (newVal - originalVal) * (newVal - originalVal);
+					//temp = (Aii * originalVal + Aij_N * u_qN + Aij_S * u_qS + Aij_E * u_qE + Aij_W * u_qW) - b[(y - padding) * img.width() + (x - padding)];
+					//rezid += temp * temp;
+					//rezid = sqrt(rezid / (img.width() * img.height()));
+				}
+			}
+
 			// Stopping condition - convergence
-			rezid = sqrt(rezid / (img.width() * img.height()));
-			//qDebug() << "rezid:" << rezid;
+			rezid = sqrt(rezid);
+			qDebug() << "rezid:" << rezid;
 			if (rezid < TOL) {
 				qDebug() << "break; iter:" << iter << "rezid:" << rezid;
 				break;
