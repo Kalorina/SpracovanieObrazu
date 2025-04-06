@@ -16,6 +16,7 @@ ImageViewer::ImageViewer(QWidget* parent)
 	ui->timeStepdoubleSpinBox->setValue(timeStep);
 	ui->doubleSpinBoxSigma->setValue(sigma);
 	ui->doubleSpinBoxK->setValue(K);
+	ui->doubleSpinBoxK->setDecimals(5);
 	ui->IDiterationsspinBox->setEnabled(false);
 	ui->IDiterationsspinBox->setMinimum(0);
 	// connects changes from user to update ES images
@@ -158,6 +159,9 @@ void ImageViewer::on_actionOriginal_triggered()
 		false;
 	}
 	ui->IDiterationsspinBox->setEnabled(false);
+	images_SIS.clear();
+	images_ES.clear();
+	images_IS.clear();
 	vW->setImage(img_original);
 	vW->update();
 }
@@ -254,14 +258,12 @@ void ImageViewer::on_actionEdge_Detector_triggered()
 		false;
 	}
 
-	//K = ui->doubleSpinBoxK->value();
-	// K -> <,5> RGB 
-	float K_Sobel = 0.0001;
-	float K_Edges = 0.005;
+	K = ui->doubleSpinBoxK->value();
+	// K -> <0,5> RGB -> BEST 0.0001
 	ui->IDiterationsspinBox->setEnabled(false);
 	ImageProcessing IPmodul;
-	//QImage new_img = IPmodul.EdgeDetectorImgSobelKernels(*vW->getImage(), K_Sobel);
-	QImage new_img = IPmodul.EdgeDetectorImgDirectEdges(*vW->getImage(), K_Edges);
+	//QImage new_img = IPmodul.EdgeDetectorImgSobelKernels(*vW->getImage(), K);
+	QImage new_img = IPmodul.EdgeDetectorImgDirectEdges(*vW->getImage(), K);
 	//IPmodul.EdgeDetector(*vW->getImage());
 	QMessageBox::information(NULL, "Message", "Edge Detector Done!\nExported to PGM file");
 	vW->setImage(new_img);
@@ -275,14 +277,14 @@ void ImageViewer::on_actionSemi_Implicit_Scheme_Diffusion_triggered()
 	timeStep = ui->timeStepdoubleSpinBox->value();
 	sigma = ui->doubleSpinBoxSigma->value();
 	K = ui->doubleSpinBoxK->value();
+	// K -> <0,5> RGB -> BEST 0.00001 Edge Detector: 0.0001
 	images_SIS.clear();
 	images_ES.clear();
 	images_IS.clear();
-	float KK = 0.0001;
 	double omega = 1.25;
 	ImageProcessing IPmodul;
 	images_SIS.append(img_original);
-	QVector<QImage> new_imgs = IPmodul.schemeSemi_Implicit(*vW->getImage(), stepCount, timeStep, omega, sigma, KK);
+	QVector<QImage> new_imgs = IPmodul.schemeSemi_Implicit(*vW->getImage(), stepCount, timeStep, omega, sigma, K);
 	images_SIS.append(new_imgs);
 	if (!images_SIS.isEmpty()) {
 		qDebug() << "Showing last solution of T =" << stepCount;

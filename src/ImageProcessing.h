@@ -65,7 +65,7 @@ public:
 	QImage EdgeDetectorImgDirectEdges(QImage img, float K); // with each edge separately
 	QVector<float> EdgeDetectorGradient3x3(QVector<QVector<float>> imgData, int x, int y); // Edge Detector for Semi-implicit scheme
 
-	double diffCoefFunction(double K, double normGradSquared) { return 1.0 / (1.0 + K * normGradSquared); }
+	float diffCoefFunction(double K, double normGradSquared) { return 1.0 / (1.0 + (K * normGradSquared)); }
 
 	// Heat Equation 
 	QVector<QImage> schemeExplicit(QImage img, int stepCount, double timeStep);
