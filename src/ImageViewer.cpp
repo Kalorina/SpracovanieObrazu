@@ -16,7 +16,7 @@ ImageViewer::ImageViewer(QWidget* parent)
 	ui->timeStepdoubleSpinBox->setValue(timeStep);
 	ui->doubleSpinBoxSigma->setValue(sigma);
 	ui->doubleSpinBoxK->setValue(K);
-	ui->doubleSpinBoxK->setDecimals(5);
+	ui->doubleSpinBoxK->setDecimals(6);
 	ui->IDiterationsspinBox->setEnabled(false);
 	ui->IDiterationsspinBox->setMinimum(0);
 	// connects changes from user to update ES images
@@ -281,6 +281,7 @@ void ImageViewer::on_actionSemi_Implicit_Scheme_Diffusion_triggered()
 	images_SIS.clear();
 	images_ES.clear();
 	images_IS.clear();
+
 	double omega = 1.25;
 	ImageProcessing IPmodul;
 	images_SIS.append(img_original);

@@ -46,40 +46,39 @@ public:
 	//bool pixelsMirror(double* originalImgData, const int bytesPerLine, const int imgWidth, const int imgHeight, const int padding);
 	//uchar* pixelsUnmirror(int padding);
 
-	QVector<QVector<float>> convertTo2Dvector(QImage img);
-	QVector<QVector<float>> convertTo2DvectorNorm(QImage img);
-	QImage convertToQImage(QVector<QVector<float>> pixelValues, int width, int height);
-	QImage convertToQImageMirrored(QVector<QVector<float>> pixelValues, int width, int height, int padding);
+	QVector<QVector<double>> convertTo2Dvector(QImage img);
+	QVector<QVector<double>> convertTo2DvectorNorm(QImage img);
+	QImage convertToQImage(QVector<QVector<double>> pixelValues, int width, int height);
+	QImage convertToQImageMirrored(QVector<QVector<double>> pixelValues, int width, int height, int padding);
 
 	QImage pixelsMirror(QImage img, int padding);
 	QImage pixelsUnmirror(QImage img, int padding);
-	void printImgData(QVector<QVector<float>> imgData, int min, int max);
-	void printImgData(QVector<QVector<float>> imgData);
+	void printImgData(QVector<QVector<double>> imgData, int min, int max);
+	void printImgData(QVector<QVector<double>> imgData);
 	
 	//Convolution
 	QImage Convolution(QImage img, int padding);
 	
 	// Edge Detector
-	void EdgeDetectorSobelKernels(QImage img, float K);		// export to PGM
-	QImage EdgeDetectorImgSobelKernels(QImage img, float K); // with Sobel kernels masks 4 direction: x,y,xy,-xy
-	QImage EdgeDetectorImgDirectEdges(QImage img, float K); // with each edge separately
-	QVector<float> EdgeDetectorGradient3x3(QVector<QVector<float>> imgData, int x, int y); // Edge Detector for Semi-implicit scheme
+	void EdgeDetectorSobelKernels(QImage img, double K);		// export to PGM
+	QImage EdgeDetectorImgSobelKernels(QImage img, double K); // with Sobel kernels masks 4 direction: x,y,xy,-xy
+	QImage EdgeDetectorImgDirectEdges(QImage img, double K); // with each edge separately
+	QVector<double> EdgeDetectorGradient3x3(QVector<QVector<double>> imgData, int x, int y); // Edge Detector for Semi-implicit scheme
 
-	float diffCoefFunction(double K, double normGradSquared) { return 1.0 / (1.0 + (K * normGradSquared)); }
+	double diffCoefFunction(double K, double normGradSquared) { return 1.0 / (1.0 + (K * normGradSquared)); }
 
 	// Heat Equation 
 	QVector<QImage> schemeExplicit(QImage img, int stepCount, double timeStep);
-	QVector<QVector<float>> schemeExplicitFloat(QVector<QVector<float>> imgData, int stepCount, double timeStep);
+	QVector<QVector<double>> schemeExplicitDouble(QVector<QVector<double>> imgData, int stepCount, double timeStep);
 
 	QVector<QImage> schemeImplicit(QImage img, int stepCount, double timeStep);
-	QVector<QVector<float>> schemeImplicitFloat(QVector<QVector<float>> imgData, int stepCount, double timeStep);
+	QVector<QVector<double>> schemeImplicitDouble(QVector<QVector<double>> imgData, int stepCount, double timeStep);
 	
 	// Linear Diffusion
 	QVector<QImage> schemeSemi_Implicit(QImage img, int stepCount, double timeStep, double omega, double sigma, double K);
-	QVector<QVector<float>> pixelSelection3x3(QVector<QVector<float>> imgData, int x, int y);
 
 	double computeImageMeanIntesity(QImage img);
-	float computeImageMeanIntesity(QVector<QVector<float>> pixelsValues, int width, int height);
+	double computeImageMeanIntesity(QVector<QVector<double>> pixelsValues, int width, int height);
 
 	// Histogram
 	QVector<int> computeHistogram(QImage img);
@@ -97,7 +96,7 @@ private:
 	uint m_imgWidth = 0;
 	uint m_imgHeight = 0;
 
-	QVector<QVector<float>> pixelValues_org;
+	QVector<QVector<double>> pixelValues_org;
 	// Convolution mask
 	QVector<QVector<double>> convolution_mask = {
 		{0.000077693991227,   0.001813519368126,   0.005031312077870,   0.001813519368126,   0.000077693991227},
