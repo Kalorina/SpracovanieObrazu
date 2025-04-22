@@ -77,6 +77,10 @@ public:
 	// Linear Diffusion
 	QVector<QImage> schemeSemi_Implicit(QImage img, int stepCount, double timeStep, double omega, double sigma, double K);
 
+	QVector<QImage> schemeMCF(QImage img, int stepCount, double timeStep, double omega, double sigma, double K);
+	QVector<QImage> schemeGMCF(QImage img, int stepCount, double timeStep, double omega, double sigma, double K);
+
+
 	double computeImageMeanIntesity(QImage img);
 	double computeImageMeanIntesity(QVector<QVector<double>> pixelsValues, int width, int height);
 

@@ -48,6 +48,8 @@ public:
     QAction *actionLinearHeatEq_Scheme;
     QAction *actionEdge_Detector;
     QAction *actionSemi_Implicit_Scheme_Diffusion;
+    QAction *actionMCF;
+    QAction *actionGMCF;
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout;
     QGroupBox *groupBox;
@@ -109,6 +111,10 @@ public:
         actionEdge_Detector->setObjectName("actionEdge_Detector");
         actionSemi_Implicit_Scheme_Diffusion = new QAction(ImageViewerClass);
         actionSemi_Implicit_Scheme_Diffusion->setObjectName("actionSemi_Implicit_Scheme_Diffusion");
+        actionMCF = new QAction(ImageViewerClass);
+        actionMCF->setObjectName("actionMCF");
+        actionGMCF = new QAction(ImageViewerClass);
+        actionGMCF->setObjectName("actionGMCF");
         centralWidget = new QWidget(ImageViewerClass);
         centralWidget->setObjectName("centralWidget");
         horizontalLayout = new QHBoxLayout(centralWidget);
@@ -223,6 +229,8 @@ public:
         menuImage->addAction(actionLinearHeatEq_Scheme);
         menuImage->addAction(actionEdge_Detector);
         menuImage->addAction(actionSemi_Implicit_Scheme_Diffusion);
+        menuImage->addAction(actionMCF);
+        menuImage->addAction(actionGMCF);
 
         retranslateUi(ImageViewerClass);
 
@@ -257,6 +265,8 @@ public:
         actionLinearHeatEq_Scheme->setText(QCoreApplication::translate("ImageViewerClass", "LinearHeatEq Scheme", nullptr));
         actionEdge_Detector->setText(QCoreApplication::translate("ImageViewerClass", "Edge Detector", nullptr));
         actionSemi_Implicit_Scheme_Diffusion->setText(QCoreApplication::translate("ImageViewerClass", "Semi-Implicit Scheme Diff", nullptr));
+        actionMCF->setText(QCoreApplication::translate("ImageViewerClass", "MCF", nullptr));
+        actionGMCF->setText(QCoreApplication::translate("ImageViewerClass", "GMCF", nullptr));
         groupBox->setTitle(QCoreApplication::translate("ImageViewerClass", "Controls", nullptr));
         label_2->setText(QCoreApplication::translate("ImageViewerClass", "Time Step Size:", nullptr));
         label_4->setText(QCoreApplication::translate("ImageViewerClass", "Linear Heat Equation", nullptr));

@@ -298,6 +298,64 @@ void ImageViewer::on_actionSemi_Implicit_Scheme_Diffusion_triggered()
 	}
 }
 
+void ImageViewer::on_actionMCF_triggered()
+{
+	if (vW->isEmpty()) false;
+
+	stepCount = ui->stepCountspinBox->value();
+	timeStep = ui->timeStepdoubleSpinBox->value();
+	sigma = ui->doubleSpinBoxSigma->value();
+	K = ui->doubleSpinBoxK->value();
+	// K -> <0,5> RGB -> BEST 0.00001 (Edge Detector: 0.0001)
+	images_SIS.clear();
+	images_ES.clear();
+	images_IS.clear();
+
+	double omega = 1.25;
+	ImageProcessing IPmodul;
+	images_SIS.append(img_original);
+	QVector<QImage> new_imgs = IPmodul.schemeSemi_Implicit(*vW->getImage(), stepCount, timeStep, omega, sigma, K);
+	images_SIS.append(new_imgs);
+	if (!images_SIS.isEmpty()) {
+		qDebug() << "Showing last solution of T =" << new_imgs.size();
+		int maxIter = images_SIS.length() - 1;
+		ui->IDiterationsspinBox->setEnabled(true);
+		ui->IDiterationsspinBox->setMaximum(maxIter);
+		ui->IDiterationsspinBox->setValue(maxIter);
+
+		updateImageFromSpinBoxSemiImplicitDiffusion(maxIter);
+	}
+}
+
+void ImageViewer::on_actionGMCF_triggered()
+{
+	if (vW->isEmpty()) false;
+
+	stepCount = ui->stepCountspinBox->value();
+	timeStep = ui->timeStepdoubleSpinBox->value();
+	sigma = ui->doubleSpinBoxSigma->value();
+	K = ui->doubleSpinBoxK->value();
+	// K -> <0,5> RGB -> BEST 0.00001 (Edge Detector: 0.0001)
+	images_SIS.clear();
+	images_ES.clear();
+	images_IS.clear();
+
+	double omega = 1.25;
+	ImageProcessing IPmodul;
+	images_SIS.append(img_original);
+	QVector<QImage> new_imgs = IPmodul.schemeSemi_Implicit(*vW->getImage(), stepCount, timeStep, omega, sigma, K);
+	images_SIS.append(new_imgs);
+	if (!images_SIS.isEmpty()) {
+		qDebug() << "Showing last solution of T =" << new_imgs.size();
+		int maxIter = images_SIS.length() - 1;
+		ui->IDiterationsspinBox->setEnabled(true);
+		ui->IDiterationsspinBox->setMaximum(maxIter);
+		ui->IDiterationsspinBox->setValue(maxIter);
+
+		updateImageFromSpinBoxSemiImplicitDiffusion(maxIter);
+	}
+}
+
 // SpinBox for Image Vector Index
 void ImageViewer::updateImageFromSpinBoxExplicitLH(int index)
 {

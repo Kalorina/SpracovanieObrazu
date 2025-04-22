@@ -113,6 +113,15 @@
     </item>
    </layout>
   </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -143,19 +152,12 @@
     <addaction name="actionLinearHeatEq_Scheme"/>
     <addaction name="actionEdge_Detector"/>
     <addaction name="actionSemi_Implicit_Scheme_Diffusion"/>
+    <addaction name="actionMCF"/>
+    <addaction name="actionGMCF"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
    <property name="text">
     <string>Open</string>
@@ -242,7 +244,17 @@
   </action>
   <action name="actionSemi_Implicit_Scheme_Diffusion">
    <property name="text">
-    <string>Semi-Implicit Scheme Diff</string>
+    <string>Semi-Implicit Scheme PM</string>
+   </property>
+  </action>
+  <action name="actionMCF">
+   <property name="text">
+    <string>MCF</string>
+   </property>
+  </action>
+  <action name="actionGMCF">
+   <property name="text">
+    <string>GMCF</string>
    </property>
   </action>
  </widget>
