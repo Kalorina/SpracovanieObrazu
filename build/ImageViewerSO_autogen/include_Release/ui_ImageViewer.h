@@ -61,7 +61,7 @@ public:
     QDoubleSpinBox *timeStepdoubleSpinBox;
     QSpacerItem *verticalSpacer;
     QLabel *label_5;
-    QDoubleSpinBox *doubleSpinBoxOmega;
+    QDoubleSpinBox *doubleSpinBoxSigma;
     QLabel *label_6;
     QDoubleSpinBox *doubleSpinBoxK;
     QScrollArea *scrollArea;
@@ -165,10 +165,10 @@ public:
 
         gridLayout->addWidget(label_5, 3, 0, 1, 1);
 
-        doubleSpinBoxOmega = new QDoubleSpinBox(groupBox);
-        doubleSpinBoxOmega->setObjectName("doubleSpinBoxOmega");
+        doubleSpinBoxSigma = new QDoubleSpinBox(groupBox);
+        doubleSpinBoxSigma->setObjectName("doubleSpinBoxSigma");
 
-        gridLayout->addWidget(doubleSpinBoxOmega, 3, 2, 1, 1);
+        gridLayout->addWidget(doubleSpinBoxSigma, 3, 2, 1, 1);
 
         label_6 = new QLabel(groupBox);
         label_6->setObjectName("label_6");
@@ -262,7 +262,7 @@ public:
         label_4->setText(QCoreApplication::translate("ImageViewerClass", "Linear Heat Equation", nullptr));
         label_3->setText(QCoreApplication::translate("ImageViewerClass", "Image of iteration:", nullptr));
         label->setText(QCoreApplication::translate("ImageViewerClass", "Time Step Count:", nullptr));
-        label_5->setText(QCoreApplication::translate("ImageViewerClass", "Omega", nullptr));
+        label_5->setText(QCoreApplication::translate("ImageViewerClass", "Sigma", nullptr));
         label_6->setText(QCoreApplication::translate("ImageViewerClass", "K", nullptr));
         menuFile->setTitle(QCoreApplication::translate("ImageViewerClass", "File", nullptr));
         menuImage->setTitle(QCoreApplication::translate("ImageViewerClass", "Image", nullptr));

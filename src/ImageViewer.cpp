@@ -223,7 +223,7 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 	// qDebug() << "Time Step:" << timeStep;
 
 	ImageProcessing IPmodul;
-	if (timeStep > 0.2) {
+	if (timeStep > 0.25) {
 		images_IS.append(img_original);
 		QVector<QImage> new_imgs = IPmodul.schemeImplicit(*vW->getImage(), stepCount, timeStep);
 		images_IS.append(new_imgs);
@@ -277,7 +277,7 @@ void ImageViewer::on_actionSemi_Implicit_Scheme_Diffusion_triggered()
 	timeStep = ui->timeStepdoubleSpinBox->value();
 	sigma = ui->doubleSpinBoxSigma->value();
 	K = ui->doubleSpinBoxK->value();
-	// K -> <0,5> RGB -> BEST 0.00001 Edge Detector: 0.0001
+	// K -> <0,5> RGB -> BEST 0.00001 (Edge Detector: 0.0001)
 	images_SIS.clear();
 	images_ES.clear();
 	images_IS.clear();
@@ -288,7 +288,7 @@ void ImageViewer::on_actionSemi_Implicit_Scheme_Diffusion_triggered()
 	QVector<QImage> new_imgs = IPmodul.schemeSemi_Implicit(*vW->getImage(), stepCount, timeStep, omega, sigma, K);
 	images_SIS.append(new_imgs);
 	if (!images_SIS.isEmpty()) {
-		qDebug() << "Showing last solution of T =" << stepCount;
+		qDebug() << "Showing last solution of T =" << new_imgs.size();
 		int maxIter = images_SIS.length() - 1;
 		ui->IDiterationsspinBox->setEnabled(true);
 		ui->IDiterationsspinBox->setMaximum(maxIter);
