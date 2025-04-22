@@ -486,6 +486,66 @@ QVector<double> ImageProcessing::EdgeDetectorGradient3x3(QVector<QVector<double>
 	return gradients;
 }
 
+QVector<double> ImageProcessing::EdgeDetectorGradient3x3Epsylon(QVector<QVector<double>> imgData, int x, int y, double epsylon)
+{
+	// imgData -> 3x3 matrix in 2D vector
+	if (imgData.size() != 3 || imgData[0].size() != 3) {
+		return QVector<double>(1, 0.0);
+	}
+	QVector<double> gradients; // 4 directions E, N, W, S
+	double h = 1.0;
+
+	// E = (x + 1, y)
+	// W = (x - 1, y)
+	// N = (x, y - 1)
+	// S = (x, y + 1)
+	// NE = (x + 1, y - 1)
+	// SE = (x + 1, y + 1)
+	// SW = (x - 1, y + 1)
+	// NW = (x - 1, y - 1)
+	double gradX = 0, gradY = 0;
+	double normSq_qE = 0, normSq_qN = 0, normSq_qW = 0, normSq_qS = 0;
+
+	//----- EAST edge -----//
+	// x -> (E - p) / h
+	// y -> (NE + N - S - SE) / 4h
+	gradX = (imgData[x + 1][y] - imgData[x][y]) / h;
+	gradY = (imgData[x + 1][y - 1] + imgData[x][y - 1] - imgData[x][y + 1] - imgData[x + 1][y + 1]) / (4.0 * h);
+
+	normSq_qE = sqrt(epsylon + gradX * gradX + gradY * gradY);
+
+	//----- NORTH edge -----//
+	// y -> (N - p) / h
+	// x -> (W + NW - E - NE) / 4h 
+	gradX = (imgData[x - 1][y] + imgData[x - 1][y - 1] - imgData[x + 1][y] - imgData[x + 1][y - 1]) / (4.0 * h);
+	gradY = (imgData[x][y - 1] - imgData[x][y]) / h;
+
+	normSq_qN = sqrt(epsylon + gradX * gradX + gradY * gradY);
+
+	//----- WEST edge -----//
+	// x -> (p - W) / h
+	// y -> (S + SW - N - NW) / 4h
+	gradX = (imgData[x - 1][y] - imgData[x][y]) / h;
+	gradY = (imgData[x][y + 1] + imgData[x - 1][y + 1] - imgData[x][y - 1] - imgData[x - 1][y - 1]) / (4.0 * h);
+
+	normSq_qW = sqrt(epsylon + gradX * gradX + gradY * gradY);
+
+	//----- SOUTH edge -----//
+	// y -> (S - p) / h
+	// x -> (E + SE - W - SW) / 4h
+	gradX = (imgData[x + 1][y] + imgData[x + 1][y + 1] - imgData[x - 1][y] - imgData[x - 1][y + 1]) / (4.0 * h);
+	gradY = (imgData[x][y + 1] - imgData[x][y]) / h;
+
+	normSq_qS = sqrt(epsylon + gradX * gradX + gradY * gradY);
+
+	gradients.append(normSq_qE);
+	gradients.append(normSq_qN);
+	gradients.append(normSq_qW);
+	gradients.append(normSq_qS);
+	gradients.append((normSq_qE + normSq_qN + normSq_qW + normSq_qS) / 4.0);
+	return gradients;
+}
+
 QVector<QImage> ImageProcessing::schemeExplicit(QImage img, int stepCount, double timeStep)
 {
 	qDebug() << "Linear Heat Eq Explicit scheme";
@@ -889,7 +949,7 @@ QVector<QImage> ImageProcessing::schemeSemi_Implicit(QImage img, int stepCount, 
 					g_uW = 1.0 / (1.0 + (K * gradients[2])); // West
 					g_uS = 1.0 / (1.0 + (K * gradients[3])); // South
 
-					Aii[x][y] = 1 + timeStep * (g_uN + g_uS + g_uE + g_uW);
+					Aii[x][y] = 1 + timeStep * (g_uE + g_uN + g_uW + g_uS);
 					Aij_E[x][y] = -timeStep * g_uE;
 					Aij_W[x][y] = -timeStep * g_uW;
 					Aij_N[x][y] = -timeStep * g_uN;
@@ -976,15 +1036,17 @@ QVector<QImage> ImageProcessing::schemeMCF(QImage img, int stepCount, double tim
 	QVector<QVector<double>> selectedPixels(3, QVector<double>(3, 0.0));
 	QVector<double> gradients; // 4 directions E, N, W, S
 
+
 	// SOR parameters
 	const int MAX_ITER = 1000;
 	const double TOL = 1.0E-7;
 	/*double Aii = 1.0 + 4 * timeStep;
 	double Aij = -timeStep;*/
-	double g_uE = 0.0, g_uN = 0.0, g_uW = 0.0, g_uS = 0.0;
+	double epsylon = 0.1; // 1e-9
+	double g_uE = 0.0, g_uN = 0.0, g_uW = 0.0, g_uS = 0.0, grad_magnitude = 0.0;
 	double u_qE = 0.0, u_qN = 0.0, u_qW = 0.0, u_qS = 0.0;
 
-	qDebug() << "Semi-Implicit Perona-Malikova method; MaxIter" << MAX_ITER << "tolerance:" << TOL;
+	qDebug() << "Semi-Implicit MFC method; MaxIter" << MAX_ITER << "tolerance:" << TOL;
 
 	for (int step = 0; step < stepCount; step++)
 	{
@@ -1027,11 +1089,13 @@ QVector<QImage> ImageProcessing::schemeMCF(QImage img, int stepCount, double tim
 					}
 					// 4 directions E, N, W, S
 					gradients = EdgeDetectorGradient3x3(selectedPixels, 1, 1);
+					grad_magnitude = sqrt(gradients[0] * gradients[0] + gradients[1] * gradients[1] + epsylon);
+					
+					g_uE = 1.0;
+					g_uN = 1.0;
+					g_uW = 1.0;
+					g_uS = 1.0;
 
-					g_uE = 1.0 / (1.0 + (K * gradients[0])); // East
-					g_uN = 1.0 / (1.0 + (K * gradients[1])); // North
-					g_uW = 1.0 / (1.0 + (K * gradients[2])); // West
-					g_uS = 1.0 / (1.0 + (K * gradients[3])); // South
 
 					Aii[x][y] = 1 + timeStep * (g_uN + g_uS + g_uE + g_uW);
 					Aij_E[x][y] = -timeStep * g_uE;
@@ -1110,25 +1174,30 @@ QVector<QImage> ImageProcessing::schemeGMCF(QImage img, int stepCount, double ti
 	QVector<QVector<double>> phi = convertTo2Dvector(m_img);
 	QVector<double> b(width * height, 0.0);	// RHS vector (b) 
 	QVector<QVector<double>> phi_new = phi;
+	QVector<QVector<double>> phi_filtered;
 
-	QVector<QVector<double>> filtered_phi;
 	QVector<QVector<double>> Aii(m_img.width(), QVector<double>(m_img.height(), 0.0f));
 	QVector<QVector<double>> Aij_E(m_img.width(), QVector<double>(m_img.height(), 0.0f));
 	QVector<QVector <double>> Aij_W(m_img.width(), QVector<double>(m_img.height(), 0.0f));
 	QVector<QVector<double>> Aij_N(m_img.width(), QVector<double>(m_img.height(), 0.0f));
 	QVector<QVector <double>> Aij_S(m_img.width(), QVector<double>(m_img.height(), 0.0f));
+
 	QVector<QVector<double>> selectedPixels(3, QVector<double>(3, 0.0));
-	QVector<double> gradients; // 4 directions E, N, W, S
+	QVector<QVector<double>> selectedPixels_filtered(3, QVector<double>(3, 0.0));
+	QVector<double> gradients; // 5 directions E, N, W, S, Mean
+	QVector<double> gradients_filtered; // 4 directions E, N, W, S
 
 	// SOR parameters
 	const int MAX_ITER = 1000;
 	const double TOL = 1.0E-7;
+	const double epsylon = 0.1; // 1e-9
 	/*double Aii = 1.0 + 4 * timeStep;
 	double Aij = -timeStep;*/
 	double g_uE = 0.0, g_uN = 0.0, g_uW = 0.0, g_uS = 0.0;
+	double g_NormE = 0.0, g_NormN = 0.0, g_NormW = 0.0, g_NormS = 0.0, gradMean = 0.0;
 	double u_qE = 0.0, u_qN = 0.0, u_qW = 0.0, u_qS = 0.0;
 
-	qDebug() << "Semi-Implicit Perona-Malikova method; MaxIter" << MAX_ITER << "tolerance:" << TOL;
+	qDebug() << "Semi-Implicit GMCF method; MaxIter" << MAX_ITER << "tolerance:" << TOL;
 
 	for (int step = 0; step < stepCount; step++)
 	{
@@ -1143,11 +1212,11 @@ QVector<QImage> ImageProcessing::schemeGMCF(QImage img, int stepCount, double ti
 		//Filter data with ES/IS-LHEq with tau=1 based on sigma 
 		if (sigma <= 0.25) {
 			qDebug() << "Data filtration with Explicit Scheme";
-			filtered_phi = schemeExplicitDouble(phi, 1, timeStep);
+			phi_filtered = schemeExplicitDouble(phi, 1, timeStep);
 		}
 		else {
 			qDebug() << "Data filtration with Implicit Scheme";
-			filtered_phi = schemeImplicitDouble(phi, 1, timeStep);
+			phi_filtered = schemeImplicitDouble(phi, 1, timeStep);
 		}
 		qDebug() << "Data filtration done";
 
@@ -1163,35 +1232,42 @@ QVector<QImage> ImageProcessing::schemeGMCF(QImage img, int stepCount, double ti
 			{
 				for (int y = 1; y < m_img.height() - 1; y++)
 				{
+					//Linear Diffusion Filtered data
 					// Select 3x3 pixels
 					for (int i = -1; i <= 1; i++) {
 						for (int j = -1; j <= 1; j++) {
-							selectedPixels[i + 1][j + 1] = filtered_phi[x + i][y + j];
+							selectedPixels_filtered[i + 1][j + 1] = phi_filtered[x + i][y + j];
+							selectedPixels[i + 1][j + 1] = phi[x + i][y + j];
 						}
 					}
 					// 4 directions E, N, W, S
-					gradients = EdgeDetectorGradient3x3(selectedPixels, 1, 1);
+					gradients_filtered = EdgeDetectorGradient3x3(selectedPixels_filtered, 1, 1);
 
-					g_uE = 1.0 / (1.0 + (K * gradients[0])); // East
-					g_uN = 1.0 / (1.0 + (K * gradients[1])); // North
-					g_uW = 1.0 / (1.0 + (K * gradients[2])); // West
-					g_uS = 1.0 / (1.0 + (K * gradients[3])); // South
+					g_uE = 1.0 / (1.0 + (K * gradients_filtered[0])); // East
+					g_uN = 1.0 / (1.0 + (K * gradients_filtered[1])); // North
+					g_uW = 1.0 / (1.0 + (K * gradients_filtered[2])); // West
+					g_uS = 1.0 / (1.0 + (K * gradients_filtered[3])); // South
 
-					Aii[x][y] = 1 + timeStep * (g_uN + g_uS + g_uE + g_uW);
-					Aij_E[x][y] = -timeStep * g_uE;
-					Aij_W[x][y] = -timeStep * g_uW;
-					Aij_N[x][y] = -timeStep * g_uN;
-					Aij_S[x][y] = -timeStep * g_uS;
+					// 5 directions E, N, W, S, MeanGradient
+					gradients = EdgeDetectorGradient3x3Epsylon(selectedPixels, 1, 1, epsylon);
+
+					Aii[x][y] = 1 + timeStep * gradients[4] *
+						(g_uE / gradients[0] + g_uN / gradients[1] + g_uW / gradients[2] + g_uS / gradients[3]);
+					Aij_E[x][y] = -timeStep * gradients[4] * g_uE / gradients[0];
+					Aij_N[x][y] = -timeStep * gradients[4] * g_uN / gradients[1];
+					Aij_W[x][y] = -timeStep * gradients[4] * g_uW / gradients[2];
+					Aij_S[x][y] = -timeStep * gradients[4] * g_uS / gradients[3];
 
 					// neighbors
 					u_qE = phi[x + 1][y];								// right (East)
-					u_qW = (x > 1 ? phi_new[x - 1][y] : phi[x - 1][y]); // left (West)
 					u_qN = (y > 1 ? phi_new[x][y - 1] : phi[x][y - 1]); // top (North)
+					u_qW = (x > 1 ? phi_new[x - 1][y] : phi[x - 1][y]); // left (West)
 					u_qS = phi[x][y + 1];								// bottom (South)
 
 					double sigmaSOR = Aij_E[x][y] * u_qE + Aij_N[x][y] * u_qN + Aij_W[x][y] * u_qW + Aij_S[x][y] * u_qS;
 					double originalVal = phi[x][y];
-					double newVal = (1.0 - omega) * originalVal + (omega / Aii[x][y]) * (b[(y - padding) * img.width() + (x - padding)] - sigmaSOR);
+					//double newVal = (1.0 - omega) * originalVal + (omega / Aii[x][y]) * (b[(y - padding) * img.width() + (x - padding)] - sigmaSOR);
+					double newVal = originalVal + omega * ((b[(y - padding) * img.width() + (x - padding)] - sigmaSOR) / Aii[x][y] - originalVal);
 					phi_new[x][y] = newVal;
 
 					rezid += (newVal - originalVal) * (newVal - originalVal);

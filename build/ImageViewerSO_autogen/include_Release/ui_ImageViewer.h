@@ -68,11 +68,11 @@ public:
     QDoubleSpinBox *doubleSpinBoxK;
     QScrollArea *scrollArea;
     QWidget *scrollAreaWidgetContents;
+    QToolBar *mainToolBar;
+    QStatusBar *statusBar;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuImage;
-    QToolBar *mainToolBar;
-    QStatusBar *statusBar;
 
     void setupUi(QMainWindow *ImageViewerClass)
     {
@@ -200,6 +200,12 @@ public:
         horizontalLayout->addWidget(scrollArea);
 
         ImageViewerClass->setCentralWidget(centralWidget);
+        mainToolBar = new QToolBar(ImageViewerClass);
+        mainToolBar->setObjectName("mainToolBar");
+        ImageViewerClass->addToolBar(Qt::ToolBarArea::TopToolBarArea, mainToolBar);
+        statusBar = new QStatusBar(ImageViewerClass);
+        statusBar->setObjectName("statusBar");
+        ImageViewerClass->setStatusBar(statusBar);
         menuBar = new QMenuBar(ImageViewerClass);
         menuBar->setObjectName("menuBar");
         menuBar->setGeometry(QRect(0, 0, 1019, 33));
@@ -208,12 +214,6 @@ public:
         menuImage = new QMenu(menuBar);
         menuImage->setObjectName("menuImage");
         ImageViewerClass->setMenuBar(menuBar);
-        mainToolBar = new QToolBar(ImageViewerClass);
-        mainToolBar->setObjectName("mainToolBar");
-        ImageViewerClass->addToolBar(Qt::ToolBarArea::TopToolBarArea, mainToolBar);
-        statusBar = new QStatusBar(ImageViewerClass);
-        statusBar->setObjectName("statusBar");
-        ImageViewerClass->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());
         menuBar->addAction(menuImage->menuAction());
@@ -264,7 +264,7 @@ public:
         actionExplicit_Scheme->setText(QCoreApplication::translate("ImageViewerClass", "Explicit Scheme", nullptr));
         actionLinearHeatEq_Scheme->setText(QCoreApplication::translate("ImageViewerClass", "LinearHeatEq Scheme", nullptr));
         actionEdge_Detector->setText(QCoreApplication::translate("ImageViewerClass", "Edge Detector", nullptr));
-        actionSemi_Implicit_Scheme_Diffusion->setText(QCoreApplication::translate("ImageViewerClass", "Semi-Implicit Scheme Diff", nullptr));
+        actionSemi_Implicit_Scheme_Diffusion->setText(QCoreApplication::translate("ImageViewerClass", "Semi-Implicit Scheme PM", nullptr));
         actionMCF->setText(QCoreApplication::translate("ImageViewerClass", "MCF", nullptr));
         actionGMCF->setText(QCoreApplication::translate("ImageViewerClass", "GMCF", nullptr));
         groupBox->setTitle(QCoreApplication::translate("ImageViewerClass", "Controls", nullptr));

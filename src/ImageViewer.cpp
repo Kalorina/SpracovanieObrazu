@@ -37,6 +37,18 @@ ImageViewer::ImageViewer(QWidget* parent)
 		this,
 		&ImageViewer::updateImageFromSpinBoxSemiImplicitDiffusion);
 
+	// connects changes from user to update MCF images
+	connect(ui->IDiterationsspinBox,
+		QOverload<int>::of(&QSpinBox::valueChanged),
+		this,
+		&ImageViewer::updateImageFromSpinBoxMCF);
+
+	// connects changes from user to update GMCF images
+	connect(ui->IDiterationsspinBox,
+		QOverload<int>::of(&QSpinBox::valueChanged),
+		this,
+		&ImageViewer::updateImageFromSpinBoxGMCF);
+
 	vW->setObjectName("ViewerWidget");
 }
 
@@ -162,6 +174,8 @@ void ImageViewer::on_actionOriginal_triggered()
 	images_SIS.clear();
 	images_ES.clear();
 	images_IS.clear();
+	images_MCF.clear();
+	images_GMCF.clear();
 	vW->setImage(img_original);
 	vW->update();
 }
@@ -216,9 +230,11 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 	stepCount = ui->stepCountspinBox->value();  
 	timeStep = ui->timeStepdoubleSpinBox->value();
 	sigma = ui->doubleSpinBoxSigma->value();
+	images_SIS.clear();
 	images_ES.clear();
 	images_IS.clear();
-	images_SIS.clear();
+	images_MCF.clear();
+	images_GMCF.clear();
 	// qDebug() << "Step Count:" << stepCount;
 	// qDebug() << "Time Step:" << timeStep;
 
@@ -281,6 +297,8 @@ void ImageViewer::on_actionSemi_Implicit_Scheme_Diffusion_triggered()
 	images_SIS.clear();
 	images_ES.clear();
 	images_IS.clear();
+	images_MCF.clear();
+	images_GMCF.clear();
 
 	double omega = 1.25;
 	ImageProcessing IPmodul;
@@ -297,7 +315,6 @@ void ImageViewer::on_actionSemi_Implicit_Scheme_Diffusion_triggered()
 		updateImageFromSpinBoxSemiImplicitDiffusion(maxIter);
 	}
 }
-
 void ImageViewer::on_actionMCF_triggered()
 {
 	if (vW->isEmpty()) false;
@@ -310,11 +327,13 @@ void ImageViewer::on_actionMCF_triggered()
 	images_SIS.clear();
 	images_ES.clear();
 	images_IS.clear();
+	images_MCF.clear();
+	images_GMCF.clear();
 
 	double omega = 1.25;
 	ImageProcessing IPmodul;
 	images_SIS.append(img_original);
-	QVector<QImage> new_imgs = IPmodul.schemeSemi_Implicit(*vW->getImage(), stepCount, timeStep, omega, sigma, K);
+	QVector<QImage> new_imgs = IPmodul.schemeMCF(*vW->getImage(), stepCount, timeStep, omega, sigma, K);
 	images_SIS.append(new_imgs);
 	if (!images_SIS.isEmpty()) {
 		qDebug() << "Showing last solution of T =" << new_imgs.size();
@@ -326,7 +345,6 @@ void ImageViewer::on_actionMCF_triggered()
 		updateImageFromSpinBoxSemiImplicitDiffusion(maxIter);
 	}
 }
-
 void ImageViewer::on_actionGMCF_triggered()
 {
 	if (vW->isEmpty()) false;
@@ -339,15 +357,17 @@ void ImageViewer::on_actionGMCF_triggered()
 	images_SIS.clear();
 	images_ES.clear();
 	images_IS.clear();
+	images_MCF.clear();
+	images_GMCF.clear();
 
 	double omega = 1.25;
 	ImageProcessing IPmodul;
-	images_SIS.append(img_original);
-	QVector<QImage> new_imgs = IPmodul.schemeSemi_Implicit(*vW->getImage(), stepCount, timeStep, omega, sigma, K);
-	images_SIS.append(new_imgs);
-	if (!images_SIS.isEmpty()) {
+	images_GMCF.append(img_original);
+	QVector<QImage> new_imgs = IPmodul.schemeGMCF(*vW->getImage(), stepCount, timeStep, omega, sigma, K);
+	images_GMCF.append(new_imgs);
+	if (!images_GMCF.isEmpty()) {
 		qDebug() << "Showing last solution of T =" << new_imgs.size();
-		int maxIter = images_SIS.length() - 1;
+		int maxIter = images_GMCF.length() - 1;
 		ui->IDiterationsspinBox->setEnabled(true);
 		ui->IDiterationsspinBox->setMaximum(maxIter);
 		ui->IDiterationsspinBox->setValue(maxIter);
@@ -375,6 +395,20 @@ void ImageViewer::updateImageFromSpinBoxSemiImplicitDiffusion(int index)
 {
 	if (index >= 0 && index < images_SIS.size()) {
 		vW->setImage(images_SIS[index]);
+		vW->update();
+	}
+}
+void ImageViewer::updateImageFromSpinBoxMCF(int index)
+{
+	if (index >= 0 && index < images_MCF.size()) {
+		vW->setImage(images_MCF[index]);
+		vW->update();
+	}
+}
+void ImageViewer::updateImageFromSpinBoxGMCF(int index)
+{
+	if (index >= 0 && index < images_GMCF.size()) {
+		vW->setImage(images_GMCF[index]);
 		vW->update();
 	}
 }

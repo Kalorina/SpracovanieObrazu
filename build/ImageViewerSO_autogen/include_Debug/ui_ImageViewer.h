@@ -48,6 +48,8 @@ public:
     QAction *actionLinearHeatEq_Scheme;
     QAction *actionEdge_Detector;
     QAction *actionSemi_Implicit_Scheme_Diffusion;
+    QAction *actionMCF;
+    QAction *actionGMCF;
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout;
     QGroupBox *groupBox;
@@ -66,11 +68,11 @@ public:
     QDoubleSpinBox *doubleSpinBoxK;
     QScrollArea *scrollArea;
     QWidget *scrollAreaWidgetContents;
+    QToolBar *mainToolBar;
+    QStatusBar *statusBar;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuImage;
-    QToolBar *mainToolBar;
-    QStatusBar *statusBar;
 
     void setupUi(QMainWindow *ImageViewerClass)
     {
@@ -109,6 +111,10 @@ public:
         actionEdge_Detector->setObjectName("actionEdge_Detector");
         actionSemi_Implicit_Scheme_Diffusion = new QAction(ImageViewerClass);
         actionSemi_Implicit_Scheme_Diffusion->setObjectName("actionSemi_Implicit_Scheme_Diffusion");
+        actionMCF = new QAction(ImageViewerClass);
+        actionMCF->setObjectName("actionMCF");
+        actionGMCF = new QAction(ImageViewerClass);
+        actionGMCF->setObjectName("actionGMCF");
         centralWidget = new QWidget(ImageViewerClass);
         centralWidget->setObjectName("centralWidget");
         horizontalLayout = new QHBoxLayout(centralWidget);
@@ -194,6 +200,12 @@ public:
         horizontalLayout->addWidget(scrollArea);
 
         ImageViewerClass->setCentralWidget(centralWidget);
+        mainToolBar = new QToolBar(ImageViewerClass);
+        mainToolBar->setObjectName("mainToolBar");
+        ImageViewerClass->addToolBar(Qt::ToolBarArea::TopToolBarArea, mainToolBar);
+        statusBar = new QStatusBar(ImageViewerClass);
+        statusBar->setObjectName("statusBar");
+        ImageViewerClass->setStatusBar(statusBar);
         menuBar = new QMenuBar(ImageViewerClass);
         menuBar->setObjectName("menuBar");
         menuBar->setGeometry(QRect(0, 0, 1019, 33));
@@ -202,12 +214,6 @@ public:
         menuImage = new QMenu(menuBar);
         menuImage->setObjectName("menuImage");
         ImageViewerClass->setMenuBar(menuBar);
-        mainToolBar = new QToolBar(ImageViewerClass);
-        mainToolBar->setObjectName("mainToolBar");
-        ImageViewerClass->addToolBar(Qt::ToolBarArea::TopToolBarArea, mainToolBar);
-        statusBar = new QStatusBar(ImageViewerClass);
-        statusBar->setObjectName("statusBar");
-        ImageViewerClass->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());
         menuBar->addAction(menuImage->menuAction());
@@ -223,6 +229,8 @@ public:
         menuImage->addAction(actionLinearHeatEq_Scheme);
         menuImage->addAction(actionEdge_Detector);
         menuImage->addAction(actionSemi_Implicit_Scheme_Diffusion);
+        menuImage->addAction(actionMCF);
+        menuImage->addAction(actionGMCF);
 
         retranslateUi(ImageViewerClass);
 
@@ -256,7 +264,9 @@ public:
         actionExplicit_Scheme->setText(QCoreApplication::translate("ImageViewerClass", "Explicit Scheme", nullptr));
         actionLinearHeatEq_Scheme->setText(QCoreApplication::translate("ImageViewerClass", "LinearHeatEq Scheme", nullptr));
         actionEdge_Detector->setText(QCoreApplication::translate("ImageViewerClass", "Edge Detector", nullptr));
-        actionSemi_Implicit_Scheme_Diffusion->setText(QCoreApplication::translate("ImageViewerClass", "Semi-Implicit Scheme Diff", nullptr));
+        actionSemi_Implicit_Scheme_Diffusion->setText(QCoreApplication::translate("ImageViewerClass", "Semi-Implicit Scheme PM", nullptr));
+        actionMCF->setText(QCoreApplication::translate("ImageViewerClass", "MCF", nullptr));
+        actionGMCF->setText(QCoreApplication::translate("ImageViewerClass", "GMCF", nullptr));
         groupBox->setTitle(QCoreApplication::translate("ImageViewerClass", "Controls", nullptr));
         label_2->setText(QCoreApplication::translate("ImageViewerClass", "Time Step Size:", nullptr));
         label_4->setText(QCoreApplication::translate("ImageViewerClass", "Linear Heat Equation", nullptr));

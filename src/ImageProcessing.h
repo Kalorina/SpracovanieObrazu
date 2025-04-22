@@ -64,6 +64,7 @@ public:
 	QImage EdgeDetectorImgSobelKernels(QImage img, double K); // with Sobel kernels masks 4 direction: x,y,xy,-xy
 	QImage EdgeDetectorImgDirectEdges(QImage img, double K); // with each edge separately
 	QVector<double> EdgeDetectorGradient3x3(QVector<QVector<double>> imgData, int x, int y); // Edge Detector for Semi-implicit scheme
+	QVector<double> EdgeDetectorGradient3x3Epsylon(QVector<QVector<double>> imgData, int x, int y, double epsylon); // Edge Detector for Semi-implicit scheme
 
 	double diffCoefFunction(double K, double normGradSquared) { return (1.0 / (1.0 + (K * normGradSquared))); }
 

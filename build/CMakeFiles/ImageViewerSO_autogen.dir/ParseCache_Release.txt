@@ -1085,6 +1085,6 @@ C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/Im
  mdp:C:/Qt/6.8.2/msvc2022_64/include/QtWidgets/qwidgetaction.h
  mdp:C:/Qt/6.8.2/msvc2022_64/include/QtWidgets/qwizard.h
  mdp:C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/ImageViewerSO/src/ViewerWidget.h
-C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/ImageViewerSO/src/main.cpp
 C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/ImageViewerSO/src/ImageViewer.cpp
+C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/ImageViewerSO/src/main.cpp
 C:/Users/karol/Documents/UNI_SCHOOL/STU/Inzinier/Semester_8/SpracovanieObrazu/ImageViewerSO/src/ViewerWidget.cpp

@@ -36,6 +36,8 @@ private:
 	QVector<QImage> images_ES; // linear heat eq -> explicit scheme
 	QVector<QImage> images_IS; // linear heat eq -> implicit scheme
 	QVector<QImage> images_SIS; // linear Diffusion -> semi-implicit scheme
+	QVector<QImage> images_MCF; // linear Diffusion -> semi-implicit scheme
+	QVector<QImage> images_GMCF; // linear Diffusion -> semi-implicit scheme
 
 	//ImageViewer Events
 	void closeEvent(QCloseEvent* event);
@@ -59,11 +61,13 @@ private slots:
 	void on_actionConvolution_triggered(); // Convolution + Un/Mirroring
 	void on_actionLinearHeatEq_Scheme_triggered(); // Explicit timeStep (tau) <0.3 else Implicit scheme
 	void on_actionEdge_Detector_triggered(); //Edge Detecotor
-	void on_actionSemi_Implicit_Scheme_Diffusion_triggered(); // Semi implicit Scheme Linear Diffusion
-	void on_actionMCF_triggered(); 
-	void on_actionGMCF_triggered(); 
+	void on_actionSemi_Implicit_Scheme_Diffusion_triggered(); // Semi implicit Scheme Linear Diffusion Perona-Malikova
+	void on_actionMCF_triggered(); // Mean Curvature Flow
+	void on_actionGMCF_triggered(); // Generalized Mean Curvature Flow
 
 	void updateImageFromSpinBoxExplicitLH(int index);
 	void updateImageFromSpinBoxImplicitLH(int index);
 	void updateImageFromSpinBoxSemiImplicitDiffusion(int index);
+	void updateImageFromSpinBoxMCF(int index);
+	void updateImageFromSpinBoxGMCF(int index);
 };
