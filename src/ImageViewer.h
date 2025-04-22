@@ -28,7 +28,7 @@ private:
 	//QDoubleSpinBox* timeStepInput = new QDoubleSpinBox(this);
 
 	// Variables Exlicit, Implicit, Semi-Implicit
-	double timeStep = 0.5;
+	double timeStep = 1.0;
 	int stepCount = 10;
 	double sigma = 0.5;
 	double K = 0.01;

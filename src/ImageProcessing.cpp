@@ -810,131 +810,79 @@ QVector<QImage> ImageProcessing::schemeSemi_Implicit(QImage img, int stepCount, 
 {
 	QVector<QImage> images;
 
-	if (img.isNull() || stepCount <= 0 || timeStep <= 0 || omega <= 0 || K <0) {
+	if (img.isNull() || stepCount <= 0 || timeStep <= 0) {
 		return images;
 	}
-	// Convert to grayscale if img is RGB
-	img = img.convertToFormat(QImage::Format_Grayscale8);
+
+	int width = img.width();
+	int height = img.height();
 	int padding = 1;
-	QImage m_img = pixelsMirror(img, padding);
 
-	// Convert to 2D vector
-	QVector<QVector<double>> pixelValues = convertTo2Dvector(m_img);
-	QVector<QVector<double>> filter_pixelValues;
-	//QVector<QVector<double>> newPixelValues(m_img.width(), QVector<double>(m_img.height(), 0.0f));
-	QVector<QVector<double>> selectedPixels(3, QVector<double>(3, 0.0f));
-	QVector<double> gradients; // 4 directions E, N, W, S
+	QImage m_img = pixelsMirror(img.convertToFormat(QImage::Format_Grayscale8), padding);
+	QVector<QVector<double>> phi = convertTo2Dvector(m_img);
+	QVector<double> b(width * height, 0.0);	// RHS vector (b) 
+	QVector<QVector<double>> phi_new = phi;
 
+	QVector<QVector<double>> filtered_phi;
 	QVector<QVector<double>> Aii(m_img.width(), QVector<double>(m_img.height(), 0.0f));
 	QVector<QVector<double>> Aij_E(m_img.width(), QVector<double>(m_img.height(), 0.0f));
 	QVector<QVector <double>> Aij_W(m_img.width(), QVector<double>(m_img.height(), 0.0f));
 	QVector<QVector<double>> Aij_N(m_img.width(), QVector<double>(m_img.height(), 0.0f));
 	QVector<QVector <double>> Aij_S(m_img.width(), QVector<double>(m_img.height(), 0.0f));
+	QVector<QVector<double>> selectedPixels(3, QVector<double>(3, 0.0));
+	QVector<double> gradients; // 4 directions E, N, W, S
 
-	QVector<double> b(img.width() * img.height(), 0.0);	// RHS vector (b) 
-	// Initialize b with original values
-	for (int y = 0; y < img.height(); y++) {
-		for (int x = 0; x < img.width(); x++) {
-			b[y * img.width() + x] = pixelValues[x + padding][y + padding];
-		}
-	}
-
-	double neighborSum = 0.0;
+	// SOR parameters
 	const int MAX_ITER = 1000;
 	const double TOL = 1.0E-7;
-	double sigmaSOR = 0.0;
-	double h = 1.0;
+	/*double Aii = 1.0 + 4 * timeStep;
+	double Aij = -timeStep;*/
+	double g_uE = 0.0, g_uN = 0.0, g_uW = 0.0, g_uS = 0.0;
+	double u_qE = 0.0, u_qN = 0.0, u_qW = 0.0, u_qS = 0.0;
 
 	qDebug() << "Semi-Implicit Perona-Malikova method; MaxIter" << MAX_ITER << "tolerance:" << TOL;
 
-	double rezid = 0.0;
-	double temp = 0.0;
-	int iter = 0;
-	double g_uE = 0.0, g_uN = 0.0, g_uW = 0.0, g_uS = 0.0;
-	double u_qE = 0.0, u_qN = 0.0, u_qW = 0.0, u_qS = 0.0;
-	double originalVal = 0.0, newVal = 0.0;
-	double normSq_qE = 0.0, normSq_qN = 0.0, normSq_qW = 0.0, normSq_qS = 0.0;
-	double gradX = 0, gradY = 0;
-
-	// Perona-Malikova Diffusion
 	for (int step = 0; step < stepCount; step++)
 	{
+		// b with pixel values
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				b[y * width + x] = phi[x + padding][y + padding];
+			}
+		}
+
 		qDebug() << "Time step : " << step;
 		//Filter data with ES/IS-LHEq with tau=1 based on sigma 
 		if (sigma <= 0.25) {
 			qDebug() << "Data filtration with Explicit Scheme";
-			filter_pixelValues = schemeExplicitDouble(pixelValues, 1, timeStep);
+			filtered_phi = schemeExplicitDouble(phi, 1, timeStep);
 		}
 		else {
 			qDebug() << "Data filtration with Implicit Scheme";
-			filter_pixelValues = schemeImplicitDouble(pixelValues, 1, timeStep);
+			filtered_phi = schemeImplicitDouble(phi, 1, timeStep);
 		}
-		
-		// Gratiends 4 per each pixel and A matrix once per time step from filtered pixelValues (LHEq)
-		//for (int x = 1; x < m_img.width() - 1; x++) {
-		//	for (int y = 1; y < m_img.height() - 1; y++) {
-		//		// Select 3x3 pixels
-		//		for (int i = -1; i <= 1; i++) {
-		//			for (int j = -1; j <= 1; j++) {
-		//				selectedPixels[i + 1][j + 1] = filter_pixelValues[x + i][y + j];
-		//			}
-		//		}
-		//		// Compute gradient of pixels inside 3x3 window, center pixel is at (1,1)
-		//		// 4 directions E, N, W, S
-		//		gradients = EdgeDetectorGradient3x3(selectedPixels, 1, 1);
-		//		// print of gradients
-		//		/*for (int i = 0; i < gradients.size(); i++)
-		//		{
-		//			qDebug() << gradients[i];
-		//		}*/
-		//		//g_uE = diffCoefFunction(K, gradientsVector[x][y][0]); // East
-		//		//g_uE = diffCoefFunction(K, gradients[0]); // East
-		//		//g_uN = diffCoefFunction(K, gradients[1]); // North
-		//		//g_uW = diffCoefFunction(K, gradients[2]); // West
-		//		//g_uS = diffCoefFunction(K, gradients[3]); // South
-		//		
-		//		g_uE = 1.0 / (1.0 + (K * gradients[0])); // East
-		//		g_uN = 1.0 / (1.0 + (K * gradients[1])); // North
-		//		g_uW = 1.0 / (1.0 + (K * gradients[2])); // West
-		//		g_uS = 1.0 / (1.0 + (K * gradients[3])); // South
-		//		Aii[x][y] = 1 + timeStep * (g_uN + g_uS + g_uE + g_uW);
-		//		Aij_E[x][y] = -timeStep * g_uE;
-		//		Aij_W[x][y] = -timeStep * g_uW;
-		//		Aij_N[x][y] = -timeStep * g_uN;
-		//		Aij_S[x][y] = -timeStep * g_uS;
-		//	}
-		//}
+		qDebug() << "Data filtration done";
 
-		iter = 0.0;
-		rezid = 0.0;
+		double rezid = 0.0;
+		int iter = 0;
+
 		do
 		{
 			iter++;
+			rezid = 0.0;
 
-			for (int x = 1; x < m_img.width() - 1; x++) {
-				for (int y = 1; y < m_img.height() - 1; y++) {
-				
+			for (int x = 1; x < m_img.width() - 1; x++)
+			{
+				for (int y = 1; y < m_img.height() - 1; y++)
+				{
 					// Select 3x3 pixels
 					for (int i = -1; i <= 1; i++) {
 						for (int j = -1; j <= 1; j++) {
-							selectedPixels[i + 1][j + 1] = filter_pixelValues[x + i][y + j];
+							selectedPixels[i + 1][j + 1] = filtered_phi[x + i][y + j];
 						}
 					}
-
-					// Compute gradient of pixels inside 3x3 window, center pixel is at (1,1)
 					// 4 directions E, N, W, S
 					gradients = EdgeDetectorGradient3x3(selectedPixels, 1, 1);
-					// print of gradients
-					/*for (int i = 0; i < gradients.size(); i++)
-					{
-						qDebug() << gradients[i];
-					}*/
-
-					//g_uE = diffCoefFunction(K, gradientsVector[x][y][0]); // East
-					//g_uE = diffCoefFunction(K, gradients[0]); // East
-					//g_uN = diffCoefFunction(K, gradients[1]); // North
-					//g_uW = diffCoefFunction(K, gradients[2]); // West
-					//g_uS = diffCoefFunction(K, gradients[3]); // South
 
 					g_uE = 1.0 / (1.0 + (K * gradients[0])); // East
 					g_uN = 1.0 / (1.0 + (K * gradients[1])); // North
@@ -947,63 +895,42 @@ QVector<QImage> ImageProcessing::schemeSemi_Implicit(QImage img, int stepCount, 
 					Aij_N[x][y] = -timeStep * g_uN;
 					Aij_S[x][y] = -timeStep * g_uS;
 
-					// actual center pixel value
-					originalVal = pixelValues[x][y];
-
 					// neighbors
-					u_qE = pixelValues[x + 1][y];
-					u_qW = pixelValues[x - 1][y];
-					u_qN = pixelValues[x][y - 1];
-					u_qS = pixelValues[x][y + 1];
+					u_qE = phi[x + 1][y];								// right (East)
+					u_qW = (x > 1 ? phi_new[x - 1][y] : phi[x - 1][y]); // left (West)
+					u_qN = (y > 1 ? phi_new[x][y - 1] : phi[x][y - 1]); // top (North)
+					u_qS = phi[x][y + 1];								// bottom (South)
 
-					// Perona-Malikova Diffusion Implicit
-					sigmaSOR = Aij_E[x][y] * u_qE + Aij_N[x][y] * u_qN + Aij_W[x][y] * u_qW + Aij_S[x][y] * u_qS;
-					newVal = (1.0 - omega) * originalVal + (omega / Aii[x][y]) * (b[(y - padding) * img.width() + (x - padding)] - sigmaSOR);
-					pixelValues[x][y] = newVal;
+					double sigmaSOR = Aij_E[x][y] * u_qE + Aij_N[x][y] * u_qN + Aij_W[x][y] * u_qW + Aij_S[x][y] * u_qS;
+					double originalVal = phi[x][y];
+					double newVal = (1.0 - omega) * originalVal + (omega / Aii[x][y]) * (b[(y - padding) * img.width() + (x - padding)] - sigmaSOR);
+					phi_new[x][y] = newVal;
+
+					rezid += (newVal - originalVal) * (newVal - originalVal);
 				}
 			}
 
+			phi = phi_new;
 			// mirroring: boundary conditions -> zero flux
 			// edges
 			for (int x = 1; x < m_img.width() - 1; x++) {
-				pixelValues[x][0] = pixelValues[x][1];										// Top boundary
-				pixelValues[x][m_img.height() - 1] = pixelValues[x][m_img.height() - 2];	// Bottom boundary
+				phi[x][0] = phi[x][1];									// Top boundary
+				phi[x][m_img.height() - 1] = phi[x][m_img.height() - 2];// Bottom boundary
 			}
 			for (int y = 1; y < m_img.height() - 1; y++) {
-				pixelValues[0][y] = pixelValues[1][y];										// Left boundary
-				pixelValues[m_img.width() - 1][y] = pixelValues[m_img.width() - 2][y];		// Right boundary
+				phi[0][y] = phi[1][y];									// Left boundary
+				phi[m_img.width() - 1][y] = phi[m_img.width() - 2][y];	// Right boundary
 			}
-
 			// corners 
-			pixelValues[0][0] = pixelValues[1][1];																	// Top-left
-			pixelValues[m_img.width() - 1][0] = pixelValues[m_img.width() - 2][1];									// Top-right
-			pixelValues[0][m_img.height() - 1] = pixelValues[1][m_img.height() - 2];								// Bottom-left
-			pixelValues[m_img.width() - 1][m_img.height() - 1] = pixelValues[m_img.width() - 2][m_img.height() - 2];// Bottom-right
-
-			// RESIDUALS
-			rezid = 0.0;
-			//temp = 0.0;
-
-			for (int x = 1; x < m_img.width() - 1; x++) {
-				for (int y = 1; y < m_img.height() - 1; y++) {
-
-					// neighbors
-					u_qE = pixelValues[x + 1][y];
-					u_qW = pixelValues[x - 1][y];
-					u_qN = pixelValues[x][y - 1];
-					u_qS = pixelValues[x][y + 1];
-
-					// Perona-Malikova Diffusion Implicit
-					// Au - b = 0
-					temp = (Aii[x][y] * pixelValues[x][y] + Aij_N[x][y] * u_qN + Aij_S[x][y] * u_qS + Aij_E[x][y] * u_qE + Aij_W[x][y] * u_qW) - b[(y - padding) * img.width() + (x - padding)];
-					rezid += temp * temp;
-				}
-			}
+			phi[0][0] = phi[1][1];																	// Top-left
+			phi[m_img.width() - 1][0] = phi[m_img.width() - 2][1];									// Top-right
+			phi[0][m_img.height() - 1] = phi[1][m_img.height() - 2];								// Bottom-left
+			phi[m_img.width() - 1][m_img.height() - 1] = phi[m_img.width() - 2][m_img.height() - 2];// Bottom-right
 
 			// Stopping condition - convergence
-			//rezid = sqrt(rezid);
-			rezid = sqrt(rezid / (img.width() * img.height()));
+			rezid = sqrt(rezid / (width * height));
 			//qDebug() << "rezid:" << rezid;
+
 			if (rezid < TOL) {
 				qDebug() << "break; iter:" << iter << "rezid:" << rezid;
 				break;
@@ -1011,12 +938,15 @@ QVector<QImage> ImageProcessing::schemeSemi_Implicit(QImage img, int stepCount, 
 
 		} while (iter < MAX_ITER);
 
-		// Intensity Mean	
-		qDebug() << "Intensity Mean:" << computeImageMeanIntesity(pixelValues, m_img.width(), m_img.height());
+		// Intensity Mean
+		double img_mean = computeImageMeanIntesity(phi, m_img.width(), m_img.height());
+		qDebug() << "Intensity Mean:" << img_mean;
 
 		// Convert updated new pixel values back to QImage
-		images.append(convertToQImageMirrored(pixelValues, m_img.width(), m_img.height(), padding));
+		//QImage currentImg = convertToQImageMirrored(pixelValues, m_img.width(), m_img.height(), 1);
+		images.append(convertToQImageMirrored(phi, m_img.width(), m_img.height(), 1));
 	}
+
 	return images;
 }
 
