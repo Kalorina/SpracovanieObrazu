@@ -494,6 +494,7 @@ QVector<double> ImageProcessing::EdgeDetectorGradient3x3Epsylon(QVector<QVector<
 	}
 	QVector<double> gradients; // 4 directions E, N, W, S
 	double h = 1.0;
+	double eps2 = epsylon * epsylon;
 
 	// E = (x + 1, y)
 	// W = (x - 1, y)
@@ -512,7 +513,7 @@ QVector<double> ImageProcessing::EdgeDetectorGradient3x3Epsylon(QVector<QVector<
 	gradX = (imgData[x + 1][y] - imgData[x][y]) / h;
 	gradY = (imgData[x + 1][y - 1] + imgData[x][y - 1] - imgData[x][y + 1] - imgData[x + 1][y + 1]) / (4.0 * h);
 
-	normSq_qE = sqrt(epsylon + gradX * gradX + gradY * gradY);
+	normSq_qE = sqrt(eps2 + gradX * gradX + gradY * gradY);
 
 	//----- NORTH edge -----//
 	// y -> (N - p) / h
@@ -520,7 +521,7 @@ QVector<double> ImageProcessing::EdgeDetectorGradient3x3Epsylon(QVector<QVector<
 	gradX = (imgData[x - 1][y] + imgData[x - 1][y - 1] - imgData[x + 1][y] - imgData[x + 1][y - 1]) / (4.0 * h);
 	gradY = (imgData[x][y - 1] - imgData[x][y]) / h;
 
-	normSq_qN = sqrt(epsylon + gradX * gradX + gradY * gradY);
+	normSq_qN = sqrt(eps2 + gradX * gradX + gradY * gradY);
 
 	//----- WEST edge -----//
 	// x -> (p - W) / h
@@ -528,7 +529,7 @@ QVector<double> ImageProcessing::EdgeDetectorGradient3x3Epsylon(QVector<QVector<
 	gradX = (imgData[x - 1][y] - imgData[x][y]) / h;
 	gradY = (imgData[x][y + 1] + imgData[x - 1][y + 1] - imgData[x][y - 1] - imgData[x - 1][y - 1]) / (4.0 * h);
 
-	normSq_qW = sqrt(epsylon + gradX * gradX + gradY * gradY);
+	normSq_qW = sqrt(eps2 + gradX * gradX + gradY * gradY);
 
 	//----- SOUTH edge -----//
 	// y -> (S - p) / h
@@ -536,7 +537,7 @@ QVector<double> ImageProcessing::EdgeDetectorGradient3x3Epsylon(QVector<QVector<
 	gradX = (imgData[x + 1][y] + imgData[x + 1][y + 1] - imgData[x - 1][y] - imgData[x - 1][y + 1]) / (4.0 * h);
 	gradY = (imgData[x][y + 1] - imgData[x][y]) / h;
 
-	normSq_qS = sqrt(epsylon + gradX * gradX + gradY * gradY);
+	normSq_qS = sqrt(eps2 + gradX * gradX + gradY * gradY);
 
 	gradients.append(normSq_qE);
 	gradients.append(normSq_qN);
@@ -1100,8 +1101,8 @@ QVector<QImage> ImageProcessing::schemeMCF(QImage img, int stepCount, double tim
 
 					double sigmaSOR = Aij_E[x][y] * u_qE + Aij_N[x][y] * u_qN + Aij_W[x][y] * u_qW + Aij_S[x][y] * u_qS;
 					double originalVal = phi[x][y];
-					//double newVal = (1.0 - omega) * originalVal + (omega / Aii[x][y]) * (b[(y - padding) * img.width() + (x - padding)] - sigmaSOR);
-					double newVal = originalVal + omega * ((b[(y - padding) * img.width() + (x - padding)] - sigmaSOR) / Aii[x][y] - originalVal);
+					double newVal = (1.0 - omega) * originalVal + (omega / Aii[x][y]) * (b[(y - padding) * img.width() + (x - padding)] - sigmaSOR);
+					//double newVal = originalVal + omega * ((b[(y - padding) * img.width() + (x - padding)] - sigmaSOR) / Aii[x][y] - originalVal);
 					phi_new[x][y] = newVal;
 
 					rezid += (newVal - originalVal) * (newVal - originalVal);
@@ -1249,8 +1250,8 @@ QVector<QImage> ImageProcessing::schemeGMCF(QImage img, int stepCount, double ti
 
 					double sigmaSOR = Aij_E[x][y] * u_qE + Aij_N[x][y] * u_qN + Aij_W[x][y] * u_qW + Aij_S[x][y] * u_qS;
 					double originalVal = phi[x][y];
-					//double newVal = (1.0 - omega) * originalVal + (omega / Aii[x][y]) * (b[(y - padding) * img.width() + (x - padding)] - sigmaSOR);
-					double newVal = originalVal + omega * ((b[(y - padding) * img.width() + (x - padding)] - sigmaSOR) / Aii[x][y] - originalVal);
+					double newVal = (1.0 - omega) * originalVal + (omega / Aii[x][y]) * (b[(y - padding) * img.width() + (x - padding)] - sigmaSOR);
+					//double newVal = originalVal + omega * ((b[(y - padding) * img.width() + (x - padding)] - sigmaSOR) / Aii[x][y] - originalVal);
 					phi_new[x][y] = newVal;
 
 					rezid += (newVal - originalVal) * (newVal - originalVal);
