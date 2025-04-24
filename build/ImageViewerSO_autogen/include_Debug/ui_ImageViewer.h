@@ -50,6 +50,7 @@ public:
     QAction *actionSemi_Implicit_Scheme_Diffusion;
     QAction *actionMCF;
     QAction *actionGMCF;
+    QAction *actionEikonal_Distance;
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout;
     QGroupBox *groupBox;
@@ -115,6 +116,8 @@ public:
         actionMCF->setObjectName("actionMCF");
         actionGMCF = new QAction(ImageViewerClass);
         actionGMCF->setObjectName("actionGMCF");
+        actionEikonal_Distance = new QAction(ImageViewerClass);
+        actionEikonal_Distance->setObjectName("actionEikonal_Distance");
         centralWidget = new QWidget(ImageViewerClass);
         centralWidget->setObjectName("centralWidget");
         horizontalLayout = new QHBoxLayout(centralWidget);
@@ -231,6 +234,7 @@ public:
         menuImage->addAction(actionSemi_Implicit_Scheme_Diffusion);
         menuImage->addAction(actionMCF);
         menuImage->addAction(actionGMCF);
+        menuImage->addAction(actionEikonal_Distance);
 
         retranslateUi(ImageViewerClass);
 
@@ -267,6 +271,7 @@ public:
         actionSemi_Implicit_Scheme_Diffusion->setText(QCoreApplication::translate("ImageViewerClass", "Semi-Implicit Scheme PM", nullptr));
         actionMCF->setText(QCoreApplication::translate("ImageViewerClass", "MCF", nullptr));
         actionGMCF->setText(QCoreApplication::translate("ImageViewerClass", "GMCF", nullptr));
+        actionEikonal_Distance->setText(QCoreApplication::translate("ImageViewerClass", "Eikonal Distance", nullptr));
         groupBox->setTitle(QCoreApplication::translate("ImageViewerClass", "Controls", nullptr));
         label_2->setText(QCoreApplication::translate("ImageViewerClass", "Time Step Size:", nullptr));
         label_4->setText(QCoreApplication::translate("ImageViewerClass", "Linear Heat Equation", nullptr));

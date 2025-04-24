@@ -64,6 +64,7 @@ private slots:
 	void on_actionSemi_Implicit_Scheme_Diffusion_triggered(); // Semi implicit Scheme Linear Diffusion Perona-Malikova
 	void on_actionMCF_triggered(); // Mean Curvature Flow
 	void on_actionGMCF_triggered(); // Generalized Mean Curvature Flow
+	void on_actionEikonal_Distance_triggered(); // Eikonal Equation Distance function
 
 	void updateImageFromSpinBoxExplicitLH(int index);
 	void updateImageFromSpinBoxImplicitLH(int index);

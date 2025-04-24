@@ -154,6 +154,7 @@
     <addaction name="actionSemi_Implicit_Scheme_Diffusion"/>
     <addaction name="actionMCF"/>
     <addaction name="actionGMCF"/>
+    <addaction name="actionEikonal_Distance"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
@@ -255,6 +256,11 @@
   <action name="actionGMCF">
    <property name="text">
     <string>GMCF</string>
+   </property>
+  </action>
+  <action name="actionEikonal_Distance">
+   <property name="text">
+    <string>R-T distance</string>
    </property>
   </action>
  </widget>

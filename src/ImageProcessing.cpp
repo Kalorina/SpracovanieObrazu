@@ -45,7 +45,7 @@ QImage ImageProcessing::convertToQImage(QVector<QVector<double>> pixelValues, in
 
 	// the pixel values back to an image
 	for (int x = 0; x < width; x++) {
-		for (int y = 0; y <height; y++) {
+		for (int y = 0; y < height; y++) {
 			// qBound(min, value, max) -> value in <min, max>
 			int newVal = qBound(0, (int)pixelValues[x][y], 255);
 			Img.setPixel(x, y, qRgb(newVal, newVal, newVal));
@@ -1127,7 +1127,7 @@ QVector<QImage> ImageProcessing::schemeMCF(QImage img, int stepCount, double tim
 			phi[m_img.width() - 1][m_img.height() - 1] = phi[m_img.width() - 2][m_img.height() - 2];// Bottom-right
 
 			rezid = sqrt(rezid / (width * height));
-			//qDebug() << "rezid:" << rezid;
+			qDebug() << "rezid:" << rezid;
 
 			if (rezid < TOL) {
 				qDebug() << "break; iter:" << iter << "rezid:" << rezid;
@@ -1296,6 +1296,66 @@ QVector<QImage> ImageProcessing::schemeGMCF(QImage img, int stepCount, double ti
 	}
 
 	return images;
+}
+
+QVector<QVector<double>> ImageProcessing::computeEdgePixels(QImage img)
+{
+	int width = img.width();
+	int height = img.height();
+	int padding = 1;
+
+	QImage m_img = pixelsMirror(img.convertToFormat(QImage::Format_Grayscale8), padding);
+	int m_width = m_img.width();
+	int m_height = m_img.height();
+
+	QVector<QVector<double>> img_data = convertTo2Dvector(m_img);
+	QVector<QVector<double>> img_edgePixels(m_img.width(), QVector<double>(m_img.height(), 0.0));
+
+	double insideIntensity = 50.0; //Intensity value from inside of object 
+
+	for (int x = 1; x < m_width - 1; x++)
+	{
+		for (int y = 1; y < m_height - 1; y++)
+		{
+			double pixelVal = img_data[x][y];
+			double pixelValE = img_data[x + 1][y]; // East
+			double pixelValN = img_data[x][y - 1]; // North
+			double pixelValW = img_data[x - 1][y]; // West
+			double pixelValS = img_data[x][y + 1]; // South
+
+			if (pixelVal == insideIntensity)
+			{
+				// Check if the pixel is an edge pixel
+				if (pixelValE != insideIntensity || pixelValN != insideIntensity || pixelValW != insideIntensity || pixelValS != insideIntensity)
+				{
+					img_edgePixels[x][y] = 255.0; // Mark as edge pixel
+				}
+				else
+				{
+					img_edgePixels[x][y] = 0.0; // Not an edge pixel
+				}
+			}
+			else
+			{
+				img_edgePixels[x][y] = 0.0; // Not an edge pixel
+			}
+		}
+	}
+
+	return img_edgePixels;
+}
+
+QImage ImageProcessing::computeEikonalDistance(QImage img)
+{
+	if (img.isNull()) return img;
+
+	int padding = 1;
+	QImage edgePixels_data = convertToQImageMirrored(computeEdgePixels(img), img.width() + 2 * padding, img.height() + 2 * padding, padding);
+	QImage output_img;
+
+
+
+	return edgePixels_data;
 }
 
 double ImageProcessing::computeImageMeanIntesity(QImage img)

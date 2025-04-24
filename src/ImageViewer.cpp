@@ -245,6 +245,7 @@ void ImageViewer::on_actionLinearHeatEq_Scheme_triggered()
 		images_IS.append(new_imgs);
 		if (!images_IS.isEmpty()) {
 			qDebug() << "Showing last solution of T =" << stepCount;
+			qDebug();
 			int maxIter = images_IS.length() - 1;
 			ui->IDiterationsspinBox->setEnabled(true);
 			ui->IDiterationsspinBox->setMaximum(maxIter);
@@ -307,6 +308,7 @@ void ImageViewer::on_actionSemi_Implicit_Scheme_Diffusion_triggered()
 	images_SIS.append(new_imgs);
 	if (!images_SIS.isEmpty()) {
 		qDebug() << "Showing last solution of T =" << new_imgs.size();
+		qDebug();
 		int maxIter = images_SIS.length() - 1;
 		ui->IDiterationsspinBox->setEnabled(true);
 		ui->IDiterationsspinBox->setMaximum(maxIter);
@@ -337,6 +339,7 @@ void ImageViewer::on_actionMCF_triggered()
 	images_SIS.append(new_imgs);
 	if (!images_SIS.isEmpty()) {
 		qDebug() << "Showing last solution of T =" << new_imgs.size();
+		qDebug();
 		int maxIter = images_SIS.length() - 1;
 		ui->IDiterationsspinBox->setEnabled(true);
 		ui->IDiterationsspinBox->setMaximum(maxIter);
@@ -367,6 +370,7 @@ void ImageViewer::on_actionGMCF_triggered()
 	images_GMCF.append(new_imgs);
 	if (!images_GMCF.isEmpty()) {
 		qDebug() << "Showing last solution of T =" << new_imgs.size();
+		qDebug();
 		int maxIter = images_GMCF.length() - 1;
 		ui->IDiterationsspinBox->setEnabled(true);
 		ui->IDiterationsspinBox->setMaximum(maxIter);
@@ -375,6 +379,19 @@ void ImageViewer::on_actionGMCF_triggered()
 		updateImageFromSpinBoxSemiImplicitDiffusion(maxIter);
 	}
 }
+void ImageViewer::on_actionEikonal_Distance_triggered()
+{
+	if (vW->isEmpty()) {
+		false;
+	}
+	ui->IDiterationsspinBox->setEnabled(false);
+	ImageProcessing IPmodul;
+	QImage new_img = IPmodul.computeEikonalDistance(*vW->getImage());
+	qDebug() << "Edge Pixels";
+	vW->setImage(new_img);
+	vW->update();
+}
+
 
 // SpinBox for Image Vector Index
 void ImageViewer::updateImageFromSpinBoxExplicitLH(int index)
