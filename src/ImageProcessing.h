@@ -83,7 +83,7 @@ public:
 
 	// Eikonal Equation Distance
 	QVector<QVector<double>> computeEdgePixels(QImage img);
-	QImage computeEikonalDistance(QImage img);
+	QImage computeEikonalDistance(QImage img, int maxIter);
 
 	double computeImageMeanIntesity(QImage img);
 	double computeImageMeanIntesity(QVector<QVector<double>> pixelsValues, int width, int height);

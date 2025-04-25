@@ -55,18 +55,20 @@ public:
     QHBoxLayout *horizontalLayout;
     QGroupBox *groupBox;
     QGridLayout *gridLayout;
-    QLabel *label_2;
-    QLabel *label_4;
-    QSpinBox *stepCountspinBox;
-    QSpinBox *IDiterationsspinBox;
-    QLabel *label_3;
-    QLabel *label;
-    QDoubleSpinBox *timeStepdoubleSpinBox;
-    QSpacerItem *verticalSpacer;
-    QLabel *label_5;
-    QDoubleSpinBox *doubleSpinBoxSigma;
     QLabel *label_6;
     QDoubleSpinBox *doubleSpinBoxK;
+    QLabel *label_3;
+    QLabel *label;
+    QSpinBox *IDiterationsspinBox;
+    QLabel *label_2;
+    QLabel *label_4;
+    QSpacerItem *verticalSpacer;
+    QDoubleSpinBox *timeStepdoubleSpinBox;
+    QLabel *label_5;
+    QDoubleSpinBox *doubleSpinBoxSigma;
+    QSpinBox *stepCountspinBox;
+    QSpinBox *spinBoxRTmaxIter;
+    QLabel *label_7;
     QScrollArea *scrollArea;
     QWidget *scrollAreaWidgetContents;
     QToolBar *mainToolBar;
@@ -130,25 +132,15 @@ public:
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName("gridLayout");
-        label_2 = new QLabel(groupBox);
-        label_2->setObjectName("label_2");
+        label_6 = new QLabel(groupBox);
+        label_6->setObjectName("label_6");
 
-        gridLayout->addWidget(label_2, 2, 0, 1, 1);
+        gridLayout->addWidget(label_6, 4, 0, 1, 1);
 
-        label_4 = new QLabel(groupBox);
-        label_4->setObjectName("label_4");
+        doubleSpinBoxK = new QDoubleSpinBox(groupBox);
+        doubleSpinBoxK->setObjectName("doubleSpinBoxK");
 
-        gridLayout->addWidget(label_4, 0, 0, 1, 3);
-
-        stepCountspinBox = new QSpinBox(groupBox);
-        stepCountspinBox->setObjectName("stepCountspinBox");
-
-        gridLayout->addWidget(stepCountspinBox, 1, 2, 1, 1);
-
-        IDiterationsspinBox = new QSpinBox(groupBox);
-        IDiterationsspinBox->setObjectName("IDiterationsspinBox");
-
-        gridLayout->addWidget(IDiterationsspinBox, 5, 2, 1, 1);
+        gridLayout->addWidget(doubleSpinBoxK, 4, 2, 1, 1);
 
         label_3 = new QLabel(groupBox);
         label_3->setObjectName("label_3");
@@ -160,14 +152,29 @@ public:
 
         gridLayout->addWidget(label, 1, 0, 1, 1);
 
+        IDiterationsspinBox = new QSpinBox(groupBox);
+        IDiterationsspinBox->setObjectName("IDiterationsspinBox");
+
+        gridLayout->addWidget(IDiterationsspinBox, 5, 2, 1, 1);
+
+        label_2 = new QLabel(groupBox);
+        label_2->setObjectName("label_2");
+
+        gridLayout->addWidget(label_2, 2, 0, 1, 1);
+
+        label_4 = new QLabel(groupBox);
+        label_4->setObjectName("label_4");
+
+        gridLayout->addWidget(label_4, 0, 0, 1, 3);
+
+        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
+
+        gridLayout->addItem(verticalSpacer, 7, 0, 1, 1);
+
         timeStepdoubleSpinBox = new QDoubleSpinBox(groupBox);
         timeStepdoubleSpinBox->setObjectName("timeStepdoubleSpinBox");
 
         gridLayout->addWidget(timeStepdoubleSpinBox, 2, 2, 1, 1);
-
-        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
-
-        gridLayout->addItem(verticalSpacer, 6, 0, 1, 1);
 
         label_5 = new QLabel(groupBox);
         label_5->setObjectName("label_5");
@@ -179,15 +186,21 @@ public:
 
         gridLayout->addWidget(doubleSpinBoxSigma, 3, 2, 1, 1);
 
-        label_6 = new QLabel(groupBox);
-        label_6->setObjectName("label_6");
+        stepCountspinBox = new QSpinBox(groupBox);
+        stepCountspinBox->setObjectName("stepCountspinBox");
 
-        gridLayout->addWidget(label_6, 4, 0, 1, 1);
+        gridLayout->addWidget(stepCountspinBox, 1, 2, 1, 1);
 
-        doubleSpinBoxK = new QDoubleSpinBox(groupBox);
-        doubleSpinBoxK->setObjectName("doubleSpinBoxK");
+        spinBoxRTmaxIter = new QSpinBox(groupBox);
+        spinBoxRTmaxIter->setObjectName("spinBoxRTmaxIter");
+        spinBoxRTmaxIter->setMaximum(999);
 
-        gridLayout->addWidget(doubleSpinBoxK, 4, 2, 1, 1);
+        gridLayout->addWidget(spinBoxRTmaxIter, 6, 2, 1, 1);
+
+        label_7 = new QLabel(groupBox);
+        label_7->setObjectName("label_7");
+
+        gridLayout->addWidget(label_7, 6, 0, 1, 1);
 
 
         horizontalLayout->addWidget(groupBox);
@@ -273,12 +286,13 @@ public:
         actionGMCF->setText(QCoreApplication::translate("ImageViewerClass", "GMCF", nullptr));
         actionEikonal_Distance->setText(QCoreApplication::translate("ImageViewerClass", "R-T distance", nullptr));
         groupBox->setTitle(QCoreApplication::translate("ImageViewerClass", "Controls", nullptr));
-        label_2->setText(QCoreApplication::translate("ImageViewerClass", "Time Step Size:", nullptr));
-        label_4->setText(QCoreApplication::translate("ImageViewerClass", "Linear Heat Equation", nullptr));
+        label_6->setText(QCoreApplication::translate("ImageViewerClass", "K", nullptr));
         label_3->setText(QCoreApplication::translate("ImageViewerClass", "Image of iteration:", nullptr));
         label->setText(QCoreApplication::translate("ImageViewerClass", "Time Step Count:", nullptr));
+        label_2->setText(QCoreApplication::translate("ImageViewerClass", "Time Step Size:", nullptr));
+        label_4->setText(QCoreApplication::translate("ImageViewerClass", "Linear Heat Equation", nullptr));
         label_5->setText(QCoreApplication::translate("ImageViewerClass", "Sigma", nullptr));
-        label_6->setText(QCoreApplication::translate("ImageViewerClass", "K", nullptr));
+        label_7->setText(QCoreApplication::translate("ImageViewerClass", "R-T MaxIter", nullptr));
         menuFile->setTitle(QCoreApplication::translate("ImageViewerClass", "File", nullptr));
         menuImage->setTitle(QCoreApplication::translate("ImageViewerClass", "Image", nullptr));
     } // retranslateUi

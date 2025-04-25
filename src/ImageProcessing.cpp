@@ -1300,6 +1300,8 @@ QVector<QImage> ImageProcessing::schemeGMCF(QImage img, int stepCount, double ti
 
 QVector<QVector<double>> ImageProcessing::computeEdgePixels(QImage img)
 {
+	if (img.isNull()) return QVector<QVector<double>>();
+
 	int width = img.width();
 	int height = img.height();
 	int padding = 1;
@@ -1328,34 +1330,149 @@ QVector<QVector<double>> ImageProcessing::computeEdgePixels(QImage img)
 				// Check if the pixel is an edge pixel
 				if (pixelValE != insideIntensity || pixelValN != insideIntensity || pixelValW != insideIntensity || pixelValS != insideIntensity)
 				{
-					img_edgePixels[x][y] = 255.0; // Mark as edge pixel
+					img_edgePixels[x][y] = 0.0; // Mark as edge pixel
 				}
 				else
 				{
-					img_edgePixels[x][y] = 0.0; // Not an edge pixel
+					img_edgePixels[x][y] = 255.0; // Not an edge pixel
 				}
 			}
 			else
 			{
-				img_edgePixels[x][y] = 0.0; // Not an edge pixel
+				img_edgePixels[x][y] = 255.0; // Not an edge pixel
 			}
 		}
 	}
 
+	qDebug() << "Edges pixels computed";
 	return img_edgePixels;
 }
 
-QImage ImageProcessing::computeEikonalDistance(QImage img)
+QImage ImageProcessing::computeEikonalDistance(QImage img, int maxIter)
 {
 	if (img.isNull()) return img;
 
 	int padding = 1;
-	QImage edgePixels_data = convertToQImageMirrored(computeEdgePixels(img), img.width() + 2 * padding, img.height() + 2 * padding, padding);
-	QImage output_img;
+	//QImage edgePixelsImg = convertToQImageMirrored(computeEdgePixels(img), img.width() + 2 * padding, img.height() + 2 * padding, padding);
+	QVector<QVector<double>> edgePixels_data = computeEdgePixels(img);
+	QImage m_img = pixelsMirror(img.convertToFormat(QImage::Format_Grayscale8), padding);
+	int m_width = m_img.width();
+	int m_height = m_img.height();
 
+	QVector<QVector<double>> distanceMap(m_width, QVector<double>(m_height, 0.0));
+	QVector<QVector<bool>> fixedPixels(m_width, QVector<bool>(m_height, false));
 
+	// distance = 0 for edge pixels and fixed set = 1 (calculated)
+	for (int x = 1; x < m_width - 1; ++x) {
+		for (int y = 1; y < m_height - 1; ++y) {
+			if (edgePixels_data[x][y] == 0.0) {
+				distanceMap[x][y] = 0.0;
+				fixedPixels[x][y] = true;
+			}
+		}
+	}
 
-	return edgePixels_data;
+	double h = 1.0; 
+	double tau = 0.4;	//h / 2.0; 
+	double TOL = 1e-4;
+	//int maxIter = 100;
+
+	bool allFixed = false;
+	for (int iter = 0; iter < maxIter && !allFixed; ++iter) {
+		allFixed = true; // Assume all pixels are fixed unless updated
+		
+		for (int x = 1; x < m_width - 1; ++x) {
+			for (int y = 1; y < m_height - 1; ++y) {
+				// Skip fixed pixels
+				if (fixedPixels[x][y]) continue;
+
+				// Compute M terms for Rouy-Tourin scheme
+				double M_m10 = pow(std::min(distanceMap[x - 1][y] - distanceMap[x][y], 0.0), 2); // West
+				double M_p10 = pow(std::min(distanceMap[x + 1][y] - distanceMap[x][y], 0.0), 2); // East
+				double M_0m1 = pow(std::min(distanceMap[x][y - 1] - distanceMap[x][y], 0.0), 2); // North
+				double M_0p1 = pow(std::min(distanceMap[x][y + 1] - distanceMap[x][y], 0.0), 2); // South
+
+				// Update distance using Rouy-Tourin scheme
+				double prevDistance = distanceMap[x][y];
+				distanceMap[x][y] = prevDistance + tau- (tau / h) * sqrt(std::max(M_m10, M_p10) + std::max(M_0m1, M_0p1));
+
+				// Check if pixel is fixed
+				double rezid = std::abs(distanceMap[x][y] - prevDistance);
+
+				if (rezid < TOL) {
+					fixedPixels[x][y] = true;
+				}
+				else {
+					allFixed = false; // At least one pixel was updated
+				}
+			}
+		}
+		// mirroring: boundary conditions -> zero flux
+			// edges
+		for (int x = 1; x < m_img.width() - 1; x++) {
+			distanceMap[x][0] = distanceMap[x][1];									// Top boundary
+			distanceMap[x][m_img.height() - 1] = distanceMap[x][m_img.height() - 2];// Bottom boundary
+		}
+		for (int y = 1; y < m_img.height() - 1; y++) {
+			distanceMap[0][y] = distanceMap[1][y];									// Left boundary
+			distanceMap[m_img.width() - 1][y] = distanceMap[m_img.width() - 2][y];	// Right boundary
+		}
+		// corners 
+		distanceMap[0][0] = distanceMap[1][1];																	// Top-left
+		distanceMap[m_img.width() - 1][0] = distanceMap[m_img.width() - 2][1];									// Top-right
+		distanceMap[0][m_img.height() - 1] = distanceMap[1][m_img.height() - 2];								// Bottom-left
+		distanceMap[m_img.width() - 1][m_img.height() - 1] = distanceMap[m_img.width() - 2][m_img.height() - 2];// Bottom-right
+
+		qDebug() << "Iter: " << iter;
+	}
+	qDebug() << "Distances computed";
+
+	//Normalize distances for visualization
+	double maxDistance = 0.0;
+	for (int x = 1; x < m_width - 1; ++x) {
+		for (int y = 1; y < m_height - 1; ++y) {
+			maxDistance = std::max(maxDistance, std::abs(distanceMap[x][y]));
+		}
+	}
+	maxDistance = std::max(maxDistance, 1.0); // for division by zero
+
+	QVector<QVector<double>> outputPixels(m_width, QVector<double>(m_height, 0.0));
+	for (int x = 0; x < m_width; ++x) {
+		for (int y = 0; y < m_height; ++y) {
+			if (edgePixels_data[x][y] == 0.0) {
+				outputPixels[x][y] = 0.0; // Edges of object
+			}
+			else {
+				// closer to edge -> blacker, farther -> whiter
+				double normalized = std::abs(distanceMap[x][y]) / maxDistance; 
+				// 1.0-(std::abs(distanceMap[x][y]) / maxDistance); // closer to edge -> whiter, farther -> blacker
+				outputPixels[x][y] = 200.0 * std::max(0.0, std::min(1.0, normalized));
+			}
+		}
+	}
+
+	// Export to Vizualization in Mathematica
+	QFile file("output_pixels.txt");
+	if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		QTextStream out(&file);
+		// Write only the non-padded region to exclude mirroring artifacts
+		for (int y = padding; y < m_height - padding; ++y) {
+			for (int x = padding; x < m_width - padding; ++x) {
+				out << outputPixels[x][y];
+				if (x < m_width - padding - 1) {
+					out << " "; // Space-separated values
+				}
+			}
+			out << "\n";
+		}
+		file.close();
+	}
+	else {
+		// Handle file opening error (optional: log or throw)
+		qWarning("Failed to open output_pixels.txt for writing");
+	}
+
+	return convertToQImageMirrored(outputPixels, img.width() + 2 * padding, img.height() + 2 * padding, padding);
 }
 
 double ImageProcessing::computeImageMeanIntesity(QImage img)

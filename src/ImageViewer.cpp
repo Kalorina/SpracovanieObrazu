@@ -17,6 +17,7 @@ ImageViewer::ImageViewer(QWidget* parent)
 	ui->doubleSpinBoxSigma->setValue(sigma);
 	ui->doubleSpinBoxK->setValue(K);
 	ui->doubleSpinBoxK->setDecimals(6);
+	ui->spinBoxRTmaxIter->setValue(50);
 	ui->IDiterationsspinBox->setEnabled(false);
 	ui->IDiterationsspinBox->setMinimum(0);
 	// connects changes from user to update ES images
@@ -385,8 +386,9 @@ void ImageViewer::on_actionEikonal_Distance_triggered()
 		false;
 	}
 	ui->IDiterationsspinBox->setEnabled(false);
+	int maxIter = ui->spinBoxRTmaxIter->value();
 	ImageProcessing IPmodul;
-	QImage new_img = IPmodul.computeEikonalDistance(*vW->getImage());
+	QImage new_img = IPmodul.computeEikonalDistance(*vW->getImage(), maxIter);
 	qDebug() << "Edge Pixels";
 	vW->setImage(new_img);
 	vW->update();
