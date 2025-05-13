@@ -232,8 +232,8 @@ QImage ImageProcessing::Convolution(QImage img, int padding)
 		}
 	}
 
-	return convertToQImage(outputImgData, img.width(), img.height());
 	qDebug() << "Convolution done";
+	return convertToQImage(outputImgData, img.width(), img.height());
 }
 
 void ImageProcessing::EdgeDetectorSobelKernels(QImage img, double K)
@@ -357,7 +357,7 @@ QImage ImageProcessing::EdgeDetectorImgDirectEdges(QImage img, double K)
 	//float K = 0.005f; //RGB <0,5>
 	double h = 1.0f;
 
-	// Sobel filter
+	// filter
 	for (int x = 1; x < m_img.width() - 1; x++) {
 		for (int y = 1; y < m_img.height() - 1; y++) {
 			double gradX = 0, gradY = 0;
@@ -1047,7 +1047,7 @@ QVector<QImage> ImageProcessing::schemeMCF(QImage img, int stepCount, double tim
 	double g_uE = 0.0, g_uN = 0.0, g_uW = 0.0, g_uS = 0.0;
 	double u_qE = 0.0, u_qN = 0.0, u_qW = 0.0, u_qS = 0.0;
 
-	qDebug() << "Semi-Implicit GMCF method; MaxIter" << MAX_ITER << "tolerance:" << TOL;
+	qDebug() << "Semi-Implicit MCF method; MaxIter" << MAX_ITER << "tolerance:" << TOL;
 
 	for (int step = 0; step < stepCount; step++)
 	{
@@ -1127,7 +1127,7 @@ QVector<QImage> ImageProcessing::schemeMCF(QImage img, int stepCount, double tim
 			phi[m_img.width() - 1][m_img.height() - 1] = phi[m_img.width() - 2][m_img.height() - 2];// Bottom-right
 
 			rezid = sqrt(rezid / (width * height));
-			qDebug() << "rezid:" << rezid;
+			//qDebug() << "rezid:" << rezid;
 
 			if (rezid < TOL) {
 				qDebug() << "break; iter:" << iter << "rezid:" << rezid;
@@ -1173,7 +1173,7 @@ QVector<QImage> ImageProcessing::schemeGMCF(QImage img, int stepCount, double ti
 
 	// SOR parameters
 	const int MAX_ITER = 1000;
-	const double TOL = 1.0E-7;
+	const double TOL = 1.0E-6;
 	const double epsylon = 0.1; // 1e-9
 	/*double Aii = 1.0 + 4 * timeStep;
 	double Aij = -timeStep;*/
@@ -1287,8 +1287,8 @@ QVector<QImage> ImageProcessing::schemeGMCF(QImage img, int stepCount, double ti
 		} while (iter < MAX_ITER);
 
 		// Intensity Mean
-		double img_mean = computeImageMeanIntesity(phi, m_img.width(), m_img.height());
-		qDebug() << "Intensity Mean:" << img_mean;
+		//double img_mean = computeImageMeanIntesity(phi, m_img.width(), m_img.height());
+		//qDebug() << "Intensity Mean:" << img_mean;
 
 		// Convert updated new pixel values back to QImage
 		//QImage currentImg = convertToQImageMirrored(pixelValues, m_img.width(), m_img.height(), 1);
@@ -1423,7 +1423,7 @@ QImage ImageProcessing::computeEikonalDistance(QImage img, int maxIter)
 		distanceMap[0][m_img.height() - 1] = distanceMap[1][m_img.height() - 2];								// Bottom-left
 		distanceMap[m_img.width() - 1][m_img.height() - 1] = distanceMap[m_img.width() - 2][m_img.height() - 2];// Bottom-right
 
-		qDebug() << "Iter: " << iter;
+		//qDebug() << "Iter: " << iter;
 	}
 	qDebug() << "Distances computed";
 
@@ -1466,6 +1466,7 @@ QImage ImageProcessing::computeEikonalDistance(QImage img, int maxIter)
 			out << "\n";
 		}
 		file.close();
+		qDebug() << "Exported output_pixels.txt for Visual in Mathematica";
 	}
 	else {
 		// Handle file opening error (optional: log or throw)
@@ -1505,7 +1506,7 @@ double ImageProcessing::computeImageMeanIntesity(QVector<QVector<double>> pixels
 }
 
 QVector<int> ImageProcessing::computeHistogram(QImage img) {
-	QVector<int> histogram(256, 0); // Initialize histogram with 256 bins (0-255)
+	QVector<int> histogram(256, 0);
 
 	for (int y = 0; y < img.height(); ++y) {
 		for (int x = 0; x < img.width(); ++x) {
@@ -1518,10 +1519,12 @@ QVector<int> ImageProcessing::computeHistogram(QImage img) {
 	return histogram;
 }
 
+// Full Scale histogram stretch 
 QImage ImageProcessing::FSHS(QImage img)
 {
 	if (img.isNull()) return img;
 
+	qDebug() << "Full Scale Histogram Stretch...";
 	// copy of the image
 	QImage resultImg(img.width(), img.height(), img.format());
 
@@ -1560,68 +1563,61 @@ QImage ImageProcessing::FSHS(QImage img)
 		}
 	}
 
+	qDebug() << "done";
 	return resultImg;
 }
 
+// Equalization of Histogram 
 QImage ImageProcessing::EH(QImage img)
 {
 	if (img.isNull()) return img;
 
-	// copy of the image
-	QImage resultImg(img.width(), img.height(), img.format());
-
-	// if image is grayscale
+	qDebug() << "Histogram Equalization...";
+	// Ensure image is grayscale
 	bool isGrayscale = img.isGrayscale();
 	if (!isGrayscale) return img;
 
-	int totalPixels = img.width() * img.height();
+	// Create result image with same dimensions and format
+	QImage resultImg = img.copy(); // Direct copy to preserve format
 
-	QVector<int> histogram = computeHistogram(img);
+	const int imgWidth = resultImg.width();
+	const int imgHeight = resultImg.height();
 
-	// Cumulative distribution function (CDF)
-	QVector<int> cdf(256, 0);
+	// Compute histogram 
+	QVector<int> histogramData = computeHistogram(img);
 
-	// Initialize first element of CDF
-	cdf[0] = histogram[0];
-
-	// CDF for all other values
-	for (int i = 1; i < 256; ++i) {
-		cdf[i] = cdf[i - 1] + histogram[i];
+	// Normalized histogram
+	QVector<double> histogramNormalized(256, 0.0);
+	int totalPixels = imgWidth * imgHeight;
+	for (int i = 0; i < 256; i++)
+	{
+		histogramNormalized[i] = static_cast<double>(histogramData[i]) / totalPixels;
 	}
 
-	// minimum non-zero CDF value 
-	int cdfMin = 0;
-	for (int i = 0; i < 256; ++i) {
-		if (cdf[i] > 0) {
-			cdfMin = cdf[i];
-			break;
-		}
-	}
-	// mapping lookup table
-	QVector<int> mapping(256, 0);
-
-	for (int i = 0; i < 256; ++i) {
-		// equalized value using the CDF
-		if (cdf[i] == 0)
-			mapping[i] = 0;
-		else
-			mapping[i] = std::round(((float)(cdf[i] - cdfMin) / (float)(totalPixels - cdfMin)) * 255.0f);
+	// Cumulative normalized histogram
+	QVector<double> histogramCumulative(256, 0.0);
+	histogramCumulative[0] = histogramNormalized[0];
+	for (int i = 1; i < 256; i++)
+	{
+		histogramCumulative[i] = histogramCumulative[i - 1] + histogramNormalized[i];
 	}
 
-	// equalization to the image
-	for (int y = 0; y < img.height(); ++y) {
-		for (int x = 0; x < img.width(); ++x) {
+	// Apply histogram equalization
+	int scaledValue = 0;
+	for (int y = 0; y < imgHeight; y++)
+	{
+		for (int x = 0; x < imgWidth; x++)
+		{
 			QColor oldColor = img.pixelColor(x, y);
-			int gray = qGray(oldColor.red(), oldColor.green(), oldColor.blue());
-			int newGray = mapping[gray];
+			int temp = qGray(oldColor.red(), oldColor.green(), oldColor.blue());
 
-			// qBound(min, value, max)
-			newGray = qBound(0, newGray, 255);
-
-			resultImg.setPixelColor(x, y, QColor(newGray, newGray, newGray));
+			scaledValue = static_cast<int>(255.0 * histogramCumulative[temp] + 0.5);
+			scaledValue = qBound(0, scaledValue, 255);
+			resultImg.setPixelColor(x, y, QColor(scaledValue, scaledValue, scaledValue));
 		}
 	}
 
+	qDebug() << "done";
 	return resultImg;
 }
 

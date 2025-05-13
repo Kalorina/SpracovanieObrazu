@@ -17,7 +17,7 @@ ImageViewer::ImageViewer(QWidget* parent)
 	ui->doubleSpinBoxSigma->setValue(sigma);
 	ui->doubleSpinBoxK->setValue(K);
 	ui->doubleSpinBoxK->setDecimals(6);
-	ui->spinBoxRTmaxIter->setValue(50);
+	ui->spinBoxRTmaxIter->setValue(200);
 	ui->IDiterationsspinBox->setEnabled(false);
 	ui->IDiterationsspinBox->setMinimum(0);
 	// connects changes from user to update ES images

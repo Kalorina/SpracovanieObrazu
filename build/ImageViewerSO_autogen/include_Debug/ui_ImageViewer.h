@@ -193,6 +193,7 @@ public:
 
         spinBoxRTmaxIter = new QSpinBox(groupBox);
         spinBoxRTmaxIter->setObjectName("spinBoxRTmaxIter");
+        spinBoxRTmaxIter->setMaximum(999);
 
         gridLayout->addWidget(spinBoxRTmaxIter, 6, 2, 1, 1);
 
