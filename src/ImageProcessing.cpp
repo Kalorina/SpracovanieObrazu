@@ -1378,7 +1378,8 @@ QImage ImageProcessing::computeEikonalDistance(QImage img, int maxIter)
 	//int maxIter = 100;
 
 	bool allFixed = false;
-	for (int iter = 0; iter < maxIter && !allFixed; ++iter) {
+	for (int iter = 0; iter < maxIter; ++iter) {
+		// stopping criterium via allFixed
 		allFixed = true; // Assume all pixels are fixed unless updated
 		
 		for (int x = 1; x < m_width - 1; ++x) {
@@ -1422,8 +1423,12 @@ QImage ImageProcessing::computeEikonalDistance(QImage img, int maxIter)
 		distanceMap[m_img.width() - 1][0] = distanceMap[m_img.width() - 2][1];									// Top-right
 		distanceMap[0][m_img.height() - 1] = distanceMap[1][m_img.height() - 2];								// Bottom-left
 		distanceMap[m_img.width() - 1][m_img.height() - 1] = distanceMap[m_img.width() - 2][m_img.height() - 2];// Bottom-right
-
-		//qDebug() << "Iter: " << iter;
+		
+		// Stopping criterion: break if all pixels are fixed
+		if (allFixed) {
+			qDebug() << "Iter: " << iter;
+			break;
+		}
 	}
 	qDebug() << "Distances computed";
 
