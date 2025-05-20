@@ -1127,7 +1127,7 @@ QVector<QImage> ImageProcessing::schemeMCF(QImage img, int stepCount, double tim
 			phi[m_img.width() - 1][m_img.height() - 1] = phi[m_img.width() - 2][m_img.height() - 2];// Bottom-right
 
 			rezid = sqrt(rezid / (width * height));
-			//qDebug() << "rezid:" << rezid;
+			qDebug() << "rezid:" << rezid;
 
 			if (rezid < TOL) {
 				qDebug() << "break; iter:" << iter << "rezid:" << rezid;

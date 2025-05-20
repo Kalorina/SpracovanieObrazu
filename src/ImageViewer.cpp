@@ -16,7 +16,7 @@ ImageViewer::ImageViewer(QWidget* parent)
 	ui->timeStepdoubleSpinBox->setValue(timeStep);
 	ui->doubleSpinBoxSigma->setValue(sigma);
 	ui->doubleSpinBoxK->setValue(K);
-	ui->doubleSpinBoxK->setDecimals(6);
+	ui->doubleSpinBoxK->setDecimals(3);
 	ui->spinBoxRTmaxIter->setValue(200);
 	ui->IDiterationsspinBox->setEnabled(false);
 	ui->IDiterationsspinBox->setMinimum(0);
