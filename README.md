@@ -6,30 +6,40 @@ Below is a brief overview of the available functionalities.
 ![App](https://github.com/user-attachments/assets/adde0cfe-f4bf-4841-93a2-4e9b2a8f7731)
 
 Features 
+
 • Invert Image: Reverses the pixel intensities of the image (e.g., black to white, white 
 to black). 
+
 • Equalization of Histogram: Enhances image contrast by redistributing pixel 
 intensities based on the histogram. 
+
 • Full Scale Histogram Stretch: Stretches the histogram of the image to the full 
 intensity range to improve contrast. 
+
 • Convolution: Applies a kernel to the image for effects like blurring, sharpening, or 
-edge detection. Hard-coded convolution mask 5x5 
+edge detection. Hard-coded convolution mask 5x5.
+
 • Linear Heat Equation: 
-o Explicit: Solves the heat equation using an explicit finite difference scheme 
-(controlled by Time Step Count and Time Step Size, Sigma <= 0.25). 
-o Implicit: Solves the heat equation using an implicit scheme for better 
-stability. (controlled by Time Step Count and Time Step Size, Sigma > 0.25). 
+    o Explicit: Solves the heat equation using an explicit finite difference scheme 
+      (controlled by Time Step Count and Time Step Size, Sigma <= 0.25). 
+    o Implicit: Solves the heat equation using an implicit scheme for better 
+      stability. (controlled by Time Step Count and Time Step Size, Sigma > 0.25). 
+
 • Perona-Malikova (Semi-Implicit): Applies anisotropic diffusion to reduce noise 
 while preserving edges (controlled by K parameter, Time Step Count and Time Step 
 Size, Sigma for data filtration by Heat equation). 
+
 • Edge Detector: Identifies edges in the image using gradient-based techniques. 
 (controlled by K parameter) 
+
 • MFC (Mean Field Consistency): A method for image segmentation or denoising 
 based on mean field theory. (controlled by Time Step Count and Time Step Size, 
 Sigma for data filtration by Heat equation). 
+
 • GMFC (Generalized Mean Field Consistency): An enhanced version of MFC with 
 broader applicability. (controlled by K parameter, Time Step Count and Time Step 
 Size, Sigma for data filtration by Heat equation). 
+
 • Eikonal R-T Distance Function: Computes distance maps using the Eikonal 
 equation with R-T iterations (controlled by R-T MaxIter). 
 
