@@ -44,6 +44,7 @@ Size, Sigma for data filtration by Heat equation).
 equation with R-T iterations (controlled by R-T MaxIter). 
 
 Usage 
+
 1. Open the app and load your image. 
 2. Use the Controls panel to adjust parameters such as Time Step Count, Time Step 
 Size, Sigma, K, and R-T MaxIter. 
@@ -51,7 +52,9 @@ Size, Sigma, K, and R-T MaxIter.
 4. Apply the method and view the result in the image viewer. 
 
 Notes 
+
 • Adjust parameters carefully to achieve the desired effect, especially for iterative 
 methods like the Linear Heat Equation and Eikonal R-T Distance Function. 
+
 • Best value for K parameter is 0.01, as the app work with image data with values from 
 <0,255>.  
