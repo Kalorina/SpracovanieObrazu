@@ -41,7 +41,7 @@ broader applicability. (controlled by K parameter, Time Step Count and Time Step
 Size, Sigma for data filtration by Heat equation). 
 
 • Eikonal R-T Distance Function: Computes distance maps using the Eikonal 
-equation with R-T iterations (controlled by R-T MaxIter). 
+equation with R-T iterations (controlled by R-T MaxIter). Visualization in 3D also done in Wolfram Mathematica 
 
 Usage 
 
